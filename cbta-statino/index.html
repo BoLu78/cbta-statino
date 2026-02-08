@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b4d7a" />
+  <title>CBTA – Compilation</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="title">CBTA – Compilation</div>
+    <div class="subtitle">Inserimento osservazioni</div>
+  </div>
+
+  <div class="topbar-actions">
+    <div class="app-version" id="appVersion">v2026.02.05</div>
+    <button id="openSettings" class="ghost" type="button">Settings</button>
+    <!-- NB: i bottoni "Generate PDF" e "Reset Form" vengono inseriti da app.js -->
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- TRAINING INFO -->
+  <section class="card">
+    <h2>Training Information</h2>
+    <div class="grid4">
+      <label>
+        Event name
+        <input id="eventName" type="text" autocomplete="off" />
+      </label>
+
+      <label>
+        Name CPT
+        <input id="nameCpt" type="text" autocomplete="off" />
+      </label>
+
+      <label>
+        Name FO
+        <input id="nameFo" type="text" autocomplete="off" />
+      </label>
+
+      <label>
+        Date
+        <input id="date" type="date" />
+      </label>
+    </div>
+  </section>
+
+  <!-- OBSERVATION -->
+  <section class="card">
+    <h2>Observation</h2>
+
+    <div class="grid2">
+      <label>
+        Task
+        <select id="task">
+          <option value="">— seleziona —</option>
+        </select>
+      </label>
+
+      <label>
+        TEM
+        <select id="tem">
+          <option value="">— seleziona —</option>
+        </select>
+      </label>
+    </div>
+
+    <label>
+      Comments
+      <textarea id="comment" rows="4"></textarea>
+    </label>
+
+    <div class="row">
+      <label class="check"><input type="checkbox" id="cp" /> CP</label>
+      <label class="check"><input type="checkbox" id="fo" /> FO</label>
+    </div>
+
+    <div class="competencies">
+      <div class="comp-title">Competencies</div>
+      <div class="comp-grid" id="compGrid"></div>
+    </div>
+
+    <button id="addObs" class="primary" type="button">Add observation</button>
+    <!-- NB: in edit mode app.js aggiunge anche il bottone "Cancel" vicino a questo -->
+  </section>
+
+  <!-- LIST -->
+  <section class="card">
+    <h2>Inserted observations</h2>
+    <ul id="list"></ul>
+  </section>
+
+</main>
+
+<!-- SETTINGS MODAL -->
+<div id="settingsModal" class="modal hidden" aria-hidden="true">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-label="Settings">
+
+    <div class="modal-head">
+      <div>Settings</div>
+      <button id="closeSettings" type="button">Close</button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="tasks" type="button">Tasks</button>
+      <button class="tab" data-tab="tem" type="button">TEM</button>
+      <button class="tab" data-tab="ob" type="button">OB</button>
+    </div>
+
+    <!-- IMPORTANTE: app.js gestisce lo scroll su .tab-content -->
+    <div class="tab-content">
+
+      <div class="tab-panel active" id="tab-tasks">
+        <p class="hint">Edit, add or remove Tasks.</p>
+        <div id="tasksEditor" class="editor-list"></div>
+        <button id="addTask" type="button">+ Add Task</button>
+      </div>
+
+      <div class="tab-panel" id="tab-tem">
+        <p class="hint">Edit, add or remove TEM categories.</p>
+        <div id="temEditor" class="editor-list"></div>
+        <button id="addTem" type="button">+ Add TEM</button>
+      </div>
+
+      <div class="tab-panel" id="tab-ob">
+        <p class="hint">Select a competency and edit OB descriptions.</p>
+
+        <label>
+          Competency
+          <select id="obCompetencySelect"></select>
+        </label>
+
+        <div id="obEditor" class="editor-list"></div>
+      </div>
+
+    </div>
+
+    <!-- IMPORTANTE:
+         - metto anche la class "modal-actions" perché app.js la cerca per appendere "Factory Reset (ALL)"
+         - mantengo "modal-foot" per coerenza col tuo CSS
+    -->
+    <div class="modal-foot modal-actions">
+      <button id="resetSettings" type="button">Reset</button>
+      <button id="saveSettings" class="primary" type="button">Save</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- JS APP -->
+<script src="./app.js"></script>
+
+<!-- SERVICE WORKER REGISTER -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(() => console.log('Service Worker registered'))
+        .catch(err => console.warn('SW registration failed', err));
+    });
+  }
+</script>
+
+</body>
+</html>
