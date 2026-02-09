@@ -395,3 +395,62 @@ textarea {
   .grid4, .grid2 { grid-template-columns: 1fr; }
   .topbar { padding: 16px 16px; }
 }
+
+/* =========================
+   PRINT – A4 LANDSCAPE
+   (NON TOCCA IL MODULO)
+   ========================= */
+@media print {
+
+  @page {
+    size: A4 landscape;
+    margin: 8mm;
+  }
+
+  /* nasconde UI e pulsanti */
+  .topbar-actions,
+  button,
+  .modal,
+  .no-print {
+    display: none !important;
+  }
+
+  /* layout pulito */
+  html, body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .container {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .card {
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    margin: 0 0 6mm 0 !important;
+    padding: 0 !important;
+  }
+
+  /* evita spezzature brutte */
+  table, tr, td, th,
+  .card,
+  .container {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* forza colori (grigi intestazioni) */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
