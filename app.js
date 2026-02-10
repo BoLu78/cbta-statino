@@ -7,7 +7,7 @@
    ✅ UI/CRUD/Settings: same behavior as stable version
    ========================================================= */
 
-const BUILD_ID = "12feb26-v5";
+const BUILD_ID = "12feb26-v6";
 function getAppVersionLabel() {
   return "v" + BUILD_ID;
 }
@@ -1304,6 +1304,8 @@ function openPrintView() {
   const appVersion = getAppVersionLabel();
 
   const logoUrl = new URL(BRAND.logoFile, window.location.href).href;
+  const obColWidthMm = (102 / OB_COLS_ORDER.length).toFixed(3);
+  const obColGroup = OB_COLS_ORDER.map(() => `<col style="width:${obColWidthMm}mm">`).join("");
 
   const obTableBody = rows.map(r => {
     const cells = OB_COLS_ORDER.map(code => {
@@ -1335,16 +1337,31 @@ function openPrintView() {
   :root{
     --paper-w: 297mm;
     --paper-h: 210mm;
-    --page-padding: 4.2mm;
-    --screen-gap: 8px;
-    --safari-x: 0mm;
-    --print-zoom: 1;
+    --safe-margin-x: 8mm;
+    --safe-margin-y: 8mm;
+    --content-w: calc(var(--paper-w) - (var(--safe-margin-x) * 2));
+    --content-h: calc(var(--paper-h) - (var(--safe-margin-y) * 2));
+    --gap-v: 0.8mm;
+    --gap-h: 3mm;
+    --h-header: 22mm;
+    --h-intro: 9mm;
+    --h-bar: 5mm;
+    --h-info: 8mm;
+    --h-guidance: 20mm;
+    --h-tables: 120.2mm;
+    --h-footer: 5mm;
+    --h-table-block: calc(var(--h-tables) + var(--h-footer) + var(--gap-v));
+    --logo-h: 20mm;
+    --left-table-w: 176mm;
+    --right-table-w: 102mm;
+    --row-head-h: 7.2mm;
+    --row-body-h: 10.25mm;
     --ink:#000;
     --grid:#000;
     --bar:#d9d9d9;
   }
 
-  @page { size: A4 landscape; margin: 8mm; }
+  @page { size: A4 landscape; margin: 0mm; }
 
   html, body { margin:0; padding:0; }
   html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -1352,10 +1369,6 @@ function openPrintView() {
     background:#f3f4f6;
     color:var(--ink);
     font-family: Arial, Helvetica, sans-serif;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    min-height:100vh;
   }
 
   .toolbar{
@@ -1376,40 +1389,30 @@ function openPrintView() {
   }
 
   .sheet{
-    width: min(calc(var(--paper-w) - 16mm), calc(100vw - (var(--screen-gap) * 2)));
-    height: min(calc(var(--paper-h) - 16mm), calc(100vh - (var(--screen-gap) * 2)));
-    margin: var(--screen-gap) auto;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    position:relative;
-    overflow:hidden;
+    width: var(--paper-w);
+    height: var(--paper-h);
+    margin: 8px auto;
+    background:#fff;
   }
   .page{
-    width:100%;
-    height:100%;
-    padding: var(--page-padding);
+    width: var(--paper-w);
+    height: var(--paper-h);
+    padding: var(--safe-margin-y) var(--safe-margin-x);
     background:#fff;
     box-sizing:border-box;
-    overflow:hidden;
   }
   .fitRoot{
-    width:100%;
-    height:100%;
+    width: var(--content-w);
+    height: var(--content-h);
     box-sizing:border-box;
-    display:flex;
-    flex-direction:column;
-    transform:none !important;
-    zoom:1;
-    margin:0;
-    overflow:hidden;
+    display:grid;
+    grid-template-rows: var(--h-header) var(--h-intro) var(--h-bar) var(--h-info) var(--h-guidance) var(--h-table-block);
+    row-gap: var(--gap-v);
   }
 
   .print-content{
-    display:flex;
-    flex-direction:column;
-    flex:1 1 auto;
-    min-height:0;
+    display:block;
+    height:100%;
   }
 
   .no-break{
@@ -1417,84 +1420,107 @@ function openPrintView() {
     page-break-inside: avoid;
   }
 
-  .headerTable { width:100%; border-collapse:collapse; table-layout:fixed; }
-  .headerTable td { border:1px solid var(--grid); padding:0.4px 3px; vertical-align:middle; }
-  .colL { width:24%; } .colC { width:52%; } .colR { width:24%; }
+  .headerTable { width:100%; height:100%; border-collapse:collapse; table-layout:fixed; }
+  .headerTable td { border:0.2mm solid var(--grid); padding:0.6mm 1.2mm; vertical-align:middle; }
+  .colL { width:66mm; } .colC { width:146mm; } .colR { width:69mm; }
 
-  .logoCell { text-align:center; padding:0 !important; }
-  .logoCell img { width:100%; height:34mm; object-fit:contain; display:block; margin:0 auto; }
+  .logoCell { text-align:center; padding:0.3mm 1mm !important; }
+  .logoCell img { width:100%; height:var(--logo-h); object-fit:contain; display:block; margin:0 auto; }
   .titleCell { text-align:center; }
-  .titleCell .t1 { font-size:10.6px; font-weight:900; line-height:1; letter-spacing:0.08px; }
-  .metaCell { font-size:6.9px; line-height:1; }
+  .titleCell .t1 { font-size:3.7mm; font-weight:900; line-height:1.02; letter-spacing:0.05mm; }
+  .metaCell { font-size:2.45mm; line-height:1.08; }
 
-  .intro { margin:0.1px 0 0.4px; font-size:7.8px; line-height:1.01; }
-
-  .bar {
-    border:1px solid var(--grid);
-    background:var(--bar);
-    font-weight:900;
-    padding:1.4px 6px;
-    font-size:9.1px;
-    letter-spacing:0.1px;
+  .intro {
+    margin:0;
+    font-size:2.45mm;
+    line-height:1.08;
+    padding:0.2mm 0;
+    box-sizing:border-box;
   }
 
-  .infoTable { width:100%; border-collapse:collapse; table-layout:fixed; margin: 0 0 1px; }
-  .infoTable td { border:1px solid var(--grid); padding:1.6px 3.4px; font-size:8px; overflow:hidden; line-height:1.01; }
+  .bar {
+    border:0.2mm solid var(--grid);
+    background:var(--bar);
+    font-weight:900;
+    font-size:2.8mm;
+    line-height:4.6mm;
+    padding:0 1.6mm;
+    box-sizing:border-box;
+  }
+
+  .infoTable { width:100%; height:100%; border-collapse:collapse; table-layout:fixed; margin:0; }
+  .infoTable td { border:0.2mm solid var(--grid); padding:0.55mm 1.2mm; font-size:2.45mm; line-height:1.05; }
   .label { font-weight:800; }
-  .valueDate { white-space:nowrap; font-size:7.8px; }
+  .valueDate { white-space:nowrap; font-size:2.35mm; }
 
   .twoCols{
     display:grid;
-    grid-template-columns: 1.15fr .85fr;
-    gap: 3.5mm;
+    grid-template-columns: 162mm 116mm;
+    column-gap: var(--gap-h);
     width:100%;
-    margin: 0 0 1px;
+    height:100%;
   }
-  .box{ display:flex; flex-direction:column; }
+  .box{ display:block; height:100%; }
   .boxTitle{
-    border:1px solid var(--grid);
+    border:0.2mm solid var(--grid);
     background:var(--bar);
     font-weight:900;
-    padding:1.8px 6px;
-    font-size:8.9px;
+    font-size:2.65mm;
+    line-height:4mm;
+    padding:0 1.5mm;
   }
   .boxBody{
-    border-left:1px solid var(--grid);
-    border-right:1px solid var(--grid);
-    border-bottom:1px solid var(--grid);
-    padding:1.8px 6px;
-    font-size:7.8px;
-    line-height:1.02;
-    overflow:hidden;
+    border-left:0.2mm solid var(--grid);
+    border-right:0.2mm solid var(--grid);
+    border-bottom:0.2mm solid var(--grid);
+    padding:0.8mm 1.5mm;
+    font-size:2.3mm;
+    line-height:1.14;
+    height: calc(100% - 4.2mm);
+    box-sizing:border-box;
   }
   .bullets { margin:0; padding:0; list-style:none; }
-  .bullets li { display:grid; grid-template-columns:5mm 1fr; gap:5px; margin:0.4px 0; }
-  .arrow { font-weight:900; font-size:11px; line-height:1; }
+  .bullets li { display:grid; grid-template-columns:4.5mm 1fr; column-gap:1.4mm; margin:0.3mm 0; }
+  .arrow { font-weight:900; font-size:2.9mm; line-height:1; }
 
   .tables{
     display:grid;
-    grid-template-columns: 1.15fr .85fr;
-    gap: 3.5mm;
+    grid-template-columns: var(--left-table-w) var(--right-table-w);
+    column-gap: var(--gap-h);
     width:100%;
-    margin-bottom:1px;
-    flex:1 1 auto;
-    min-height:0;
+    height:var(--h-tables);
+  }
+  .tables > div { width:100%; height:100%; }
+
+  table.grid { width:100%; height:100%; border-collapse:collapse; table-layout:fixed; }
+  table.grid th, table.grid td { border:0.2mm solid var(--grid); vertical-align:middle; }
+  table.grid thead th {
+    background:#f2f2f2;
+    font-weight:900;
+    height:var(--row-head-h);
+    padding:0.6mm 0.9mm;
+    font-size:2.45mm;
+    line-height:1.02;
+    box-sizing:border-box;
+  }
+  table.grid tbody td {
+    height:var(--row-body-h);
+    padding:0.45mm 0.8mm;
+    font-size:2.3mm;
+    text-align:center;
+    line-height:1.03;
+    box-sizing:border-box;
   }
 
-  table.grid { width:100%; border-collapse:collapse; table-layout:fixed; }
-  table.grid th, table.grid td { border:1px solid var(--grid); vertical-align:middle; }
-  table.grid th { background:#f2f2f2; font-weight:900; padding:2.2px 4px; font-size:8.5px; line-height:1.01; }
-  table.grid td { padding:1.6px 4px; font-size:8.1px; text-align:center; line-height:1.02; overflow:hidden; }
+  .row { height: var(--row-body-h); }
 
-  .row { height: 8mm; }
-
-  .cell { overflow-wrap:anywhere; word-break:break-word; white-space:normal; }
+  .cell { overflow-wrap:anywhere; white-space:normal; }
   .task { width:35%; font-weight:700; text-align:left; }
   .comment { width:52%; text-align:left; }
   .tem { width:13%; }
-  .mark { width:7mm; font-weight:900; }
+  .mark { font-weight:900; }
 
-  .obcell { font-size:8px; line-height:1.02; }
+  .obcell { font-size:2.25mm; line-height:1.02; }
   .clip{
     display:block;
     overflow:hidden;
@@ -1516,63 +1542,55 @@ function openPrintView() {
   }
 
   .footerRed{
-    margin-top:1px;
-    padding-top:1px;
-    border-top: 1px solid var(--grid);
+    margin-top:var(--gap-v);
+    padding-top:0.6mm;
+    border-top: 0.2mm solid var(--grid);
     color:#c40000;
-    font-size:7.4px;
+    font-size:2.15mm;
     font-weight:800;
-    line-height:1.04;
+    line-height:1.1;
     white-space:normal;
     overflow-wrap:anywhere;
+    height:var(--h-footer);
+    box-sizing:border-box;
   }
 
   @media print{
-    @page { size: A4 landscape; margin: 8mm; }
+    @page { size: A4 landscape; margin: 0mm; }
     html, body{
-      width:100%;
-      height:100%;
+      width:297mm;
+      height:210mm;
       margin:0 !important;
       padding:0 !important;
-      overflow:hidden !important;
+      overflow:visible !important;
       background:#fff !important;
     }
-    body{
+    body,
+    .sheet,
+    .page,
+    .fitRoot,
+    .print-content{
       display:block !important;
-      min-height:0 !important;
     }
     .toolbar{ display:none !important; }
     .sheet{
-      display:block !important;
-      width:calc(var(--paper-w) - 16mm) !important;
-      height:calc(var(--paper-h) - 16mm) !important;
+      width:297mm !important;
+      height:210mm !important;
       margin:0 auto !important;
-      left:auto !important;
       overflow:visible !important;
-      break-inside: avoid-page;
-      page-break-inside: avoid;
-      break-after: avoid-page;
-      page-break-after: avoid;
     }
     .page{
-      display:block !important;
-      width:100% !important;
-      height:100% !important;
+      width:297mm !important;
+      height:210mm !important;
       margin:0 !important;
-      padding-top: var(--page-padding) !important;
-      padding-bottom: var(--page-padding) !important;
-      padding-left: var(--page-padding) !important;
-      padding-right: calc(var(--page-padding) + 0.8mm) !important;
-      box-shadow:none !important;
+      padding:var(--safe-margin-y) var(--safe-margin-x) !important;
       overflow:visible !important;
-      break-inside: avoid-page;
-      page-break-inside: avoid;
-      break-after: avoid-page;
-      page-break-after: avoid;
+      box-sizing:border-box !important;
     }
-    html, body, .sheet, .page{
-      break-after: avoid-page !important;
-      page-break-after: avoid !important;
+    .fitRoot{
+      width: var(--content-w) !important;
+      height: var(--content-h) !important;
+      overflow:visible !important;
     }
     .print-content,
     .fitRoot,
@@ -1581,32 +1599,8 @@ function openPrintView() {
     .twoCols,
     .tables,
     table.grid,
+    .print-body,
     .footerRed{
-      break-inside: avoid !important;
-      page-break-inside: avoid !important;
-    }
-    .fitRoot{
-      display:block !important;
-      zoom: var(--print-zoom) !important;
-      transform: none !important;
-      overflow:visible !important;
-    }
-    .print-content{
-      display:block !important;
-      break-inside: avoid !important;
-      page-break-inside: avoid !important;
-    }
-    .print-content,
-    .print-content *{
-      page-break-inside: avoid !important;
-      break-inside: avoid !important;
-    }
-    .print-content.print-body{
-      display:block !important;
-      width:100% !important;
-      vertical-align:top !important;
-      margin:0 !important;
-      padding:0 !important;
       break-inside: avoid !important;
       page-break-inside: avoid !important;
     }
@@ -1615,20 +1609,15 @@ function openPrintView() {
       break-inside: avoid !important;
       page-break-inside: avoid !important;
     }
-    .tables{
-      width: calc(100% - 0.8mm) !important;
-      margin: 0 auto !important;
-    }
     .print-footer{
-      margin-top:1px !important;
-      padding-top:1px !important;
-      font-size:0.88em !important;
-      line-height:1.04 !important;
+      font-size:2.15mm !important;
+      line-height:1.1 !important;
+      margin-top:var(--gap-v) !important;
       margin-bottom:0 !important;
+      padding-top:0.6mm !important;
+      height:var(--h-footer) !important;
       white-space:normal !important;
       overflow-wrap:anywhere !important;
-      break-before: avoid-page !important;
-      page-break-before: avoid !important;
     }
     tr {
       break-inside: avoid !important;
@@ -1672,10 +1661,10 @@ function openPrintView() {
   <div class="bar">TRAINING INFORMATION</div>
   <table class="infoTable">
     <colgroup>
-      <col style="width:10%"><col style="width:22%">
-      <col style="width:10%"><col style="width:14%">
-      <col style="width:8%"><col style="width:18%">
-      <col style="width:6%"><col style="width:12%">
+      <col style="width:28mm"><col style="width:56mm">
+      <col style="width:26mm"><col style="width:36mm">
+      <col style="width:20mm"><col style="width:46mm">
+      <col style="width:16mm"><col style="width:53mm">
     </colgroup>
     <tr>
       <td class="label">Event name</td>
@@ -1713,7 +1702,7 @@ function openPrintView() {
       <div>
         <table class="grid" id="tblLeft">
           <colgroup>
-            <col style="width:35%"><col style="width:52%"><col style="width:13%"><col style="width:7mm"><col style="width:7mm">
+            <col style="width:58mm"><col style="width:86mm"><col style="width:23mm"><col style="width:4.5mm"><col style="width:4.5mm">
           </colgroup>
           <thead>
             <tr><th>Task</th><th>Comments</th><th>TEM notes</th><th>CP</th><th>FO</th></tr>
@@ -1724,6 +1713,7 @@ function openPrintView() {
 
       <div>
         <table class="grid" id="tblRight">
+          <colgroup>${obColGroup}</colgroup>
           <thead><tr>${OB_COLS_ORDER.map(c => `<th>${escapeHtml(c)}</th>`).join("")}</tr></thead>
           <tbody>${obTableBody}</tbody>
         </table>
@@ -1743,16 +1733,6 @@ function openPrintView() {
 
   function nextFrame(){
     return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-  }
-
-  function isSafariEngine(){
-    const ua = navigator.userAgent || "";
-    return /Safari/i.test(ua) && !/Chrome|CriOS|Edg|OPR|FxiOS|Firefox|Android/i.test(ua);
-  }
-
-  function applyBrowserNudge(){
-    const nudge = "0mm";
-    document.documentElement.style.setProperty("--safari-x", nudge);
   }
 
   function waitForImageReady(img){
@@ -1816,35 +1796,8 @@ function openPrintView() {
     }
   }
 
-  function fitToSingleA4Page(){
-    const page = document.querySelector('.page');
-    const fitRoot = document.getElementById('fitRoot');
-    if (!fitRoot || !page) return;
-
-    fitRoot.style.zoom = '1';
-    fitRoot.style.transform = 'none';
-    fitRoot.style.margin = '0';
-
-    const maxW = page.clientWidth;
-    const maxH = page.clientHeight;
-    const contentW = fitRoot.scrollWidth;
-    const contentH = fitRoot.scrollHeight;
-
-    if (!maxW || !maxH || !contentW || !contentH) return;
-
-    const fitScale = Math.min(1, maxW / contentW, maxH / contentH);
-    const safety = isSafariEngine() ? 0.975 : 0.992;
-    const finalScale = Math.min(1, fitScale * safety);
-    const zoomValue = String(Math.max(0.96, finalScale).toFixed(3));
-    fitRoot.style.zoom = zoomValue;
-    document.documentElement.style.setProperty('--print-zoom', zoomValue);
-  }
-
   function applyPrintLayout(){
     syncTableHeights();
-    fitToSingleA4Page();
-    syncTableHeights();
-    fitToSingleA4Page();
   }
 
   let preparePromise = null;
@@ -1853,7 +1806,6 @@ function openPrintView() {
   async function ensurePrintReady(){
     if (!preparePromise) {
       preparePromise = (async () => {
-        applyBrowserNudge();
         await waitForAssetsReady();
         applyPrintLayout();
         await nextFrame();
@@ -1879,7 +1831,6 @@ function openPrintView() {
 
   window.addEventListener('load', () => {
     ensurePrintReady().catch(() => {
-      applyBrowserNudge();
       applyPrintLayout();
       setTimeout(applyPrintLayout, 120);
       setTimeout(applyPrintLayout, 320);
@@ -1887,7 +1838,6 @@ function openPrintView() {
   });
   window.addEventListener('resize', applyPrintLayout);
   window.addEventListener('beforeprint', () => {
-    applyBrowserNudge();
     applyPrintLayout();
   });
 </script>
