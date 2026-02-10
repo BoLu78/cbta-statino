@@ -1394,8 +1394,11 @@ function openPrintView() {
   .fitRoot{
     width:100%;
     height:100%;
+    box-sizing:border-box;
     display:flex;
     flex-direction:column;
+    position:relative;
+    padding-bottom:8mm;
     transform:none !important;
     zoom:1;
     margin:0;
@@ -1461,6 +1464,7 @@ function openPrintView() {
     grid-template-columns: 1.15fr .85fr;
     gap: 3.5mm;
     width:100%;
+    margin-bottom:6mm;
     flex:1 1 auto;
     min-height:0;
   }
@@ -1500,7 +1504,11 @@ function openPrintView() {
   }
 
   .footerRed{
-    margin-top: 3px;
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:0;
+    margin:0;
     padding-top: 3px;
     border-top: 1px solid var(--grid);
     color:#c40000;
