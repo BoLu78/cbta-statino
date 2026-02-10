@@ -1,20 +1,11 @@
 /* =========================================================
-   CBTA Statino — Service Worker (DEFINITIVE)
-   Offline safe + UPDATE safe (iPad Safari)
-   VERSION: 2026-02-10-sw-definitive
-
-   Strategy:
-   - HTML (navigate): network-first (aggiornamenti sempre), fallback cache offline
-   - JS/CSS: stale-while-revalidate (veloce, si aggiorna in background)
-   - altri assets: cache-first
+   CBTA Statino — Service Worker (UPDATE + OFFLINE)
+   VERSION: 2026-02-10-sw-update
    ========================================================= */
 
-const CACHE_NAME = "cbta-statino-v2026-02-10";
+const CACHE_NAME = "cbta-statino-2026-02-10"; // cambia SOLO questa stringa quando vuoi forzare un reset cache
 
-/* Assets essenziali (precache)
-   NB: aggiungi qui SOLO file che esistono davvero in root
-*/
-const ASSETS = [
+const PRECACHE = [
   "./",
   "./index.html",
   "./styles.css",
@@ -27,19 +18,11 @@ const ASSETS = [
   "./apple-touch-icon.png"
 ];
 
-/* =====================
-   INSTALL
-   ===================== */
 self.addEventListener("install", (event) => {
   self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then((c) => c.addAll(PRECACHE)));
 });
 
-/* =====================
-   ACTIVATE
-   ===================== */
 self.addEventListener("activate", (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
@@ -48,80 +31,40 @@ self.addEventListener("activate", (event) => {
   })());
 });
 
-/* =====================
-   FETCH
-   ===================== */
+// network-first per HTML e app.js (così aggiorna SEMPRE), cache-first per asset
 self.addEventListener("fetch", (event) => {
   const req = event.request;
-
   if (req.method !== "GET") return;
 
   const url = new URL(req.url);
+  if (url.origin !== location.origin) return;
 
-  // Solo stesso origin
-  if (url.origin !== self.location.origin) return;
+  const isHTML = req.mode === "navigate" || (req.headers.get("accept") || "").includes("text/html");
+  const isAppJS = url.pathname.endsWith("/app.js") || url.pathname.endsWith("app.js");
 
-  const isHTML =
-    req.mode === "navigate" ||
-    (req.headers.get("accept") || "").includes("text/html");
-
-  const isJS = url.pathname.endsWith(".js");
-  const isCSS = url.pathname.endsWith(".css");
-
-  // 1) HTML: NETWORK FIRST (così aggiorna sempre)
-  if (isHTML) {
+  if (isHTML || isAppJS) {
     event.respondWith((async () => {
       try {
         const fresh = await fetch(req, { cache: "no-store" });
         const cache = await caches.open(CACHE_NAME);
         cache.put(req, fresh.clone());
         return fresh;
-      } catch (e) {
-        const cached = await caches.match(req) || await caches.match("./index.html");
-        return cached;
+      } catch {
+        return (await caches.match(req)) || (isHTML ? caches.match("./index.html") : caches.match("./app.js"));
       }
     })());
     return;
   }
 
-  // 2) JS/CSS: STALE-WHILE-REVALIDATE (veloce + update)
-  if (isJS || isCSS) {
-    event.respondWith((async () => {
-      const cache = await caches.open(CACHE_NAME);
-      const cached = await cache.match(req);
-
-      const fetchPromise = fetch(req)
-        .then((fresh) => {
-          if (fresh && fresh.status === 200) cache.put(req, fresh.clone());
-          return fresh;
-        })
-        .catch(() => null);
-
-      // se ho cache -> ritorno subito cache, intanto aggiorno in background
-      if (cached) return cached;
-
-      // altrimenti provo rete
-      const fresh = await fetchPromise;
-      return fresh || cached;
-    })());
-    return;
-  }
-
-  // 3) ALTRI ASSET: CACHE FIRST (offline friendly)
+  // default: cache-first
   event.respondWith((async () => {
     const cached = await caches.match(req);
     if (cached) return cached;
-
-    try {
-      const fresh = await fetch(req);
-      if (fresh && fresh.status === 200) {
-        const cache = await caches.open(CACHE_NAME);
-        cache.put(req, fresh.clone());
-      }
-      return fresh;
-    } catch {
-      return cached;
-    }
+    const fresh = await fetch(req);
+    const cache = await caches.open(CACHE_NAME);
+    cache.put(req, fresh.clone());
+    return fresh;
   })());
 });
+
 

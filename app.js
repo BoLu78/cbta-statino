@@ -1253,13 +1253,8 @@ function ensureResetButton() {
 }
 
 /* =========================================================
-   CAPITOLO 16 — EXPORT / PRINT
-   (1 PAGINA • A4 • LANDSCAPE • iPad Safari stable)
-   FIX:
-   ✅ Logo sempre visibile (URL assoluto, no about:blank issues)
-   ✅ NO "break-inside: avoid" sulle tabelle (evita il buco e la pagina 2)
-   ✅ 1 pagina: altezza righe + padding ottimizzati
-   ✅ Tabelle allineate (header + righe stessa altezza)
+   CAPITOLO 16 — EXPORT / PRINT  (DEF)
+   1 PAGINA • A4 • LANDSCAPE • iPad Safari
    ========================================================= */
 
 function ensureExportButton() {
@@ -1300,31 +1295,26 @@ function openPrintView() {
   const rows = buildRowsForPrint();
   const formattedDate = fmtDate(info.date);
 
-  // ✅ LOGO: URL assoluto (funziona anche in about:blank)
   const logoUrl = new URL(BRAND.logoFile, window.location.href).href;
 
-  const obTableBody = rows
-    .map(r => {
-      const cells = OB_COLS_ORDER.map(code => {
-        const arr = ensureArray(r.competencies && r.competencies[code]);
-        const txt = arr.length ? arr.join(",") : "";
-        return `<td class="cell obcell">${escapeHtml(txt)}</td>`;
-      }).join("");
-      return `<tr class="row">${cells}</tr>`;
-    })
-    .join("");
+  const obTableBody = rows.map(r => {
+    const cells = OB_COLS_ORDER.map(code => {
+      const arr = ensureArray(r.competencies && r.competencies[code]);
+      const txt = arr.length ? arr.join(",") : "";
+      return `<td class="cell obcell">${escapeHtml(txt)}</td>`;
+    }).join("");
+    return `<tr class="row">${cells}</tr>`;
+  }).join("");
 
-  const obsTableBody = rows
-    .map(r => `
-      <tr class="row">
-        <td class="cell task">${escapeHtml(r.task)}</td>
-        <td class="cell comment">${escapeHtml(r.comment)}</td>
-        <td class="cell tem">${escapeHtml(r.tem)}</td>
-        <td class="cell mark">${escapeHtml(r.cp)}</td>
-        <td class="cell mark">${escapeHtml(r.fo)}</td>
-      </tr>
-    `)
-    .join("");
+  const obsTableBody = rows.map(r => `
+    <tr class="row">
+      <td class="cell task">${escapeHtml(r.task)}</td>
+      <td class="cell comment">${escapeHtml(r.comment)}</td>
+      <td class="cell tem">${escapeHtml(r.tem)}</td>
+      <td class="cell mark">${escapeHtml(r.cp)}</td>
+      <td class="cell mark">${escapeHtml(r.fo)}</td>
+    </tr>
+  `).join("");
 
   const html = `<!doctype html>
 <html lang="en">
@@ -1334,175 +1324,126 @@ function openPrintView() {
 <title>CBTA Statino - Print</title>
 
 <style>
-  /* =========================
-     PAPER: A4 LANDSCAPE
-     ========================= */
-  @page { size: A4 landscape; margin: 6mm; }
-
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: #fff;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
+  /* ===== PAPER ===== */
+  @page { size: A4 landscape; margin: 6mm; } /* Safari iPad NON rispetta sempre margin:0 */
+  html, body { margin:0; padding:0; background:#fff; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body { font-family: Arial, Helvetica, sans-serif; color:#000; }
 
-  /* =========================
-     SCREEN PREVIEW (solo preview)
-     ========================= */
-  .toolbar {
-    position: fixed;
-    top: 8px;
-    right: 10px;
-    z-index: 9999;
-    display: flex;
-    gap: 8px;
+  /* ===== TOOLBAR (screen only) ===== */
+  .toolbar{
+    position: fixed; top: 8px; right: 10px; z-index: 9999;
+    display:flex; gap:8px;
   }
-  .btn {
-    padding: 10px 12px;
-    border-radius: 10px;
-    border: 1px solid #d7d7d7;
-    background: #fff;
-    cursor: pointer;
-    font-weight: 700;
-  }
-  .screen {
-    display: flex;
-    justify-content: center;
-    padding: 14px;
-    background: #eee;
+  .btn{
+    padding:10px 12px; border-radius:10px;
+    border:1px solid #d7d7d7; background:#fff;
+    cursor:pointer; font-weight:700;
   }
 
-  /* =========================
-     PAGE CANVAS (area stampabile A4 meno margini)
-     @page margin 6mm -> area = 285mm x 198mm
-     ========================= */
-  .page {
-    width: 285mm;
-    height: 198mm;
+  /* ===== PAGE CANVAS (content box, inside @page margins) ===== */
+  .page{
+    width: calc(297mm - 12mm);
+    height: calc(210mm - 12mm);
     box-sizing: border-box;
-    padding: 8mm;
-    overflow: hidden; /* fondamentale: niente pagina 2 */
-    background: #fff;
+    overflow: hidden;
   }
 
-  /* =========================
-     HEADER
-     ========================= */
+  /* ===== HEADER ===== */
   .headerTable { width:100%; border-collapse:collapse; table-layout:fixed; }
-  .headerTable td { border:1.4px solid #000; padding:4px 6px; vertical-align:middle; }
+  .headerTable td { border:1.2px solid #000; padding:3px 5px; vertical-align:middle; }
+  .colL { width: 22%; } .colC { width: 56%; } .colR { width: 22%; }
 
-  .colL { width: 22%; }
-  .colC { width: 56%; }
-  .colR { width: 22%; }
-
-  .logoCell img { width:100%; height:22mm; object-fit:contain; }
+  .logoCell img { width:100%; height:18mm; object-fit:contain; }
   .titleCell { text-align:center; }
-  .titleCell .t1 { font-size:17px; font-weight:900; }
-  .metaCell { font-size:10.5px; line-height:1.15; }
+  .titleCell .t1 { font-size:16px; font-weight:900; }
+  .metaCell { font-size:10px; line-height:1.12; }
 
-  .intro { margin:4px 0 8px; font-size:11px; line-height:1.2; }
-  .bar { border:1.4px solid #000; background:#d9d9d9; font-weight:900; padding:5px 8px; }
+  .intro { margin:3px 0 5px; font-size:10.5px; line-height:1.15; }
+
+  .bar {
+    border:1.2px solid #000; background:#d9d9d9;
+    font-weight:900; padding:4px 7px; font-size:12.5px;
+  }
 
   /* TRAINING INFO */
-  .infoTable { width:100%; border-collapse:collapse; table-layout:fixed; margin-bottom: 8px; }
-  .infoTable td { border:1.4px solid #000; padding:6px 6px; font-size:13px; overflow:hidden; }
+  .infoTable { width:100%; border-collapse:collapse; table-layout:fixed; margin: 0 0 5px; }
+  .infoTable td { border:1.2px solid #000; padding:4px 5px; font-size:12px; overflow:hidden; }
   .label { font-weight:800; }
-  .value { font-weight:400; }
-  .infoTable .valueDate { white-space:nowrap; font-size:12.5px; }
+  .valueDate { white-space:nowrap; font-size:11.5px; }
 
-  .twoCols {
+  /* OBS/ROOT CAUSE BOXES */
+  .twoCols{
     display:grid;
     grid-template-columns: 1.15fr .85fr;
-    gap: 8mm;
+    gap: 6mm;
     width:100%;
-    box-sizing:border-box;
-    align-items: stretch;
-    margin-bottom: 0;
+    margin: 0 0 5px;
   }
-  .box { display:flex; flex-direction:column; height:26mm; }
-  .boxTitle { border:1.4px solid #000; background:#d9d9d9; font-weight:900; padding:5px 8px; }
-  .boxBody {
-    border-left:1.4px solid #000;
-    border-right:1.4px solid #000;
-    border-bottom:1.4px solid #000;
-    padding:5px 8px;
-    font-size:11px;
-    flex:1;
+  .box{ display:flex; flex-direction:column; }
+  .boxTitle{
+    border:1.2px solid #000; background:#d9d9d9;
+    font-weight:900; padding:4px 7px; font-size:12.5px;
+  }
+  .boxBody{
+    border-left:1.2px solid #000;
+    border-right:1.2px solid #000;
+    border-bottom:1.2px solid #000;
+    padding:4px 7px;
+    font-size:10.5px;
+    line-height:1.12;
     overflow:hidden;
-    display:flex;
-    flex-direction:column;
-    justify-content:flex-start;
   }
   .bullets { margin:0; padding:0; list-style:none; }
-  .bullets li { display:grid; grid-template-columns:7mm 1fr; gap:6px; align-items:start; margin:1px 0; }
-  .arrow { font-weight:900; font-size:15px; line-height:1; }
+  .bullets li { display:grid; grid-template-columns:6mm 1fr; gap:6px; margin:1px 0; }
+  .arrow { font-weight:900; font-size:14px; line-height:1; }
 
   /* TABLES */
-  .tables { display:grid; grid-template-columns: 1.15fr .85fr; gap: 8mm; }
+  .tables{
+    display:grid;
+    grid-template-columns: 1.15fr .85fr;
+    gap: 6mm;
+    width:100%;
+  }
 
   table.grid { width:100%; border-collapse:collapse; table-layout:fixed; }
-  table.grid th, table.grid td { border:1.4px solid #000; vertical-align:middle; }
-  table.grid th { background:#f2f2f2; font-weight:900; padding:5px 6px; font-size:13px; }
-  table.grid td { padding:5px 6px; font-size:12px; text-align:center; }
+  table.grid th, table.grid td { border:1.2px solid #000; vertical-align:middle; }
+  table.grid th { background:#f2f2f2; font-weight:900; padding:4px 5px; font-size:12px; }
+  table.grid td { padding:3px 5px; font-size:11px; text-align:center; }
 
-  /* 1 PAGINA: qui è il rubinetto */
-  .row { height:10mm; }
+  /* IMPORTANT: altezza righe più bassa per stare in 1 pagina */
+  .row { height: 10mm; }
 
   .cell { overflow:hidden; word-break:break-word; white-space:normal; }
   .task { width:35%; font-weight:700; text-align:left; }
   .comment { width:52%; text-align:left; }
   .tem { width:13%; }
-  .mark { width:7mm; text-align:center; font-weight:900; }
-  .obcell { font-size:11px; }
+  .mark { width:7mm; font-weight:900; }
 
-  .footerRed {
-    margin-top: 6px;
-    padding-top: 6px;
-    border-top: 1.4px solid #000;
-    color: #c40000;
-    font-size: 11.5px;
-    font-weight: 800;
+  .obcell { font-size:10px; }
+
+  .footerRed{
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1.2px solid #000;
+    color:#c40000;
+    font-size:10.5px;
+    font-weight:800;
+    line-height:1.1;
   }
 
-  /* =========================
-     PRINT RULES (chiave)
-     - NON bloccare le tabelle con break-inside: avoid
-     - blocca solo header/box/footer
-     - evita che una singola riga si spezzi
-     ========================= */
-  @media print {
-    .toolbar { display:none !important; }
+  /* ===== PRINT RULES ===== */
+  @media print{
+    .toolbar{ display:none !important; }
 
-    /* IMPORTANTISSIMO: non nascondere .screen (contiene .page) */
-    .screen { display:block !important; padding:0 !important; background:#fff !important; }
+    /* NON bloccare contenitori grossi (causa “buco” e pagina 2 su iPad) */
+    .page, .tables, table.grid { break-inside:auto !important; page-break-inside:auto !important; }
 
-    html, body { margin:0 !important; padding:0 !important; background:#fff !important; }
+    /* blocca solo le righe (evita righe spezzate) */
+    tr { break-inside: avoid !important; page-break-inside: avoid !important; }
 
-    /* Non spezzare SOLO questi blocchi */
-    .headerTable, .infoTable, .twoCols, .box, .footerRed {
-      break-inside: avoid !important;
-      page-break-inside: avoid !important;
-    }
-
-    /* Le tabelle devono poter stare nella pagina (non “spinte”) */
-    .tables, table.grid {
-      break-inside: auto !important;
-      page-break-inside: auto !important;
-    }
-
-    /* Evita spezzamento di una singola riga */
-    table.grid tr {
-      break-inside: avoid !important;
-      page-break-inside: avoid !important;
-    }
-
-    /* Forza compattazione in stampa */
-    .row { height:10mm !important; }
-    table.grid td { padding: 4px 5px !important; font-size: 11px !important; }
-    table.grid th { padding: 4px 5px !important; font-size: 12px !important; }
+    /* assicura niente overflow che spinge su pagina 2 */
+    html, body { overflow:hidden !important; }
   }
 </style>
 </head>
@@ -1513,119 +1454,89 @@ function openPrintView() {
   <button class="btn" onclick="window.close()">Close</button>
 </div>
 
-<div class="screen">
-  <div class="page" id="page">
+<div class="page">
 
-    <table class="headerTable">
-      <colgroup>
-        <col class="colL" />
-        <col class="colC" />
-        <col class="colR" />
-      </colgroup>
-      <tr>
-        <td class="logoCell"><img src="${escapeHtml(logoUrl)}" alt="NEOS" /></td>
-        <td class="titleCell"><div class="t1">${escapeHtml(BRAND.title)}</div></td>
-        <td class="metaCell">
-          <div>${escapeHtml(BRAND.metaRight.sn)}</div>
-          <div>${escapeHtml(BRAND.metaRight.revision)}</div>
-          <div>${escapeHtml(BRAND.metaRight.date)}</div>
-          <div>${escapeHtml(BRAND.metaRight.edited)}</div>
-        </td>
-      </tr>
-    </table>
+  <table class="headerTable">
+    <colgroup><col class="colL"/><col class="colC"/><col class="colR"/></colgroup>
+    <tr>
+      <td class="logoCell"><img src="${escapeHtml(logoUrl)}" alt="NEOS" /></td>
+      <td class="titleCell"><div class="t1">${escapeHtml(BRAND.title)}</div></td>
+      <td class="metaCell">
+        <div>${escapeHtml(BRAND.metaRight.sn)}</div>
+        <div>${escapeHtml(BRAND.metaRight.revision)}</div>
+        <div>${escapeHtml(BRAND.metaRight.date)}</div>
+        <div>${escapeHtml(BRAND.metaRight.edited)}</div>
+      </td>
+    </tr>
+  </table>
 
-    <div class="intro">
-      ${escapeHtml(BRAND.introText)
-        .replaceAll("capturing the instructor observations","<b>capturing the instructor observations</b>")
-        .replaceAll("root cause classification","<b>root cause classification</b>")}
-    </div>
-
-    <div class="bar">TRAINING INFORMATION</div>
-    <table class="infoTable">
-      <colgroup>
-        <col style="width:10%">
-        <col style="width:22%">
-        <col style="width:10%">
-        <col style="width:14%">
-        <col style="width:8%">
-        <col style="width:18%">
-        <col style="width:6%">
-        <col style="width:12%">
-      </colgroup>
-      <tr>
-        <td class="label">Event name</td>
-        <td class="value">${escapeHtml(info.eventName)}</td>
-        <td class="label">Name CPT</td>
-        <td class="value">${escapeHtml(info.nameCpt)}</td>
-        <td class="label">Name FO</td>
-        <td class="value">${escapeHtml(info.nameFo)}</td>
-        <td class="label">Date</td>
-        <td class="value valueDate">${escapeHtml(formattedDate)}</td>
-      </tr>
-    </table>
-
-    <div class="twoCols">
-      <div class="box">
-        <div class="boxTitle">1. Observe</div>
-        <div class="boxBody">
-          <ul class="bullets">
-            ${BRAND.observeGuidance.map(t => `<li><div class="arrow">➔</div><div>${escapeHtml(t)}</div></li>`).join("")}
-          </ul>
-        </div>
-      </div>
-
-      <div class="box">
-        <div class="boxTitle">2. Root Cause Classification</div>
-        <div class="boxBody">
-          <ul class="bullets">
-            ${BRAND.rootCauseGuidance.map(t => `<li><div class="arrow">➔</div><div>${escapeHtml(t)}</div></li>`).join("")}
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <div class="tables">
-      <div>
-        <table class="grid" id="tblLeft">
-          <colgroup>
-            <col style="width:35%">
-            <col style="width:52%">
-            <col style="width:13%">
-            <col style="width:7mm">
-            <col style="width:7mm">
-          </colgroup>
-          <thead>
-            <tr>
-              <th>Task</th>
-              <th>Comments</th>
-              <th>TEM notes</th>
-              <th>CP</th>
-              <th>FO</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${obsTableBody}
-          </tbody>
-        </table>
-      </div>
-
-      <div>
-        <table class="grid" id="tblRight">
-          <thead>
-            <tr>
-              ${OB_COLS_ORDER.map(c => `<th>${escapeHtml(c)}</th>`).join("")}
-            </tr>
-          </thead>
-          <tbody>
-            ${obTableBody}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="footerRed">${escapeHtml(BRAND.footerRed)}</div>
-
+  <div class="intro">
+    ${escapeHtml(BRAND.introText)
+      .replaceAll("capturing the instructor observations","<b>capturing the instructor observations</b>")
+      .replaceAll("root cause classification","<b>root cause classification</b>")}
   </div>
+
+  <div class="bar">TRAINING INFORMATION</div>
+  <table class="infoTable">
+    <colgroup>
+      <col style="width:10%"><col style="width:22%">
+      <col style="width:10%"><col style="width:14%">
+      <col style="width:8%"><col style="width:18%">
+      <col style="width:6%"><col style="width:12%">
+    </colgroup>
+    <tr>
+      <td class="label">Event name</td>
+      <td class="value">${escapeHtml(info.eventName)}</td>
+      <td class="label">Name CPT</td>
+      <td class="value">${escapeHtml(info.nameCpt)}</td>
+      <td class="label">Name FO</td>
+      <td class="value">${escapeHtml(info.nameFo)}</td>
+      <td class="label">Date</td>
+      <td class="value valueDate">${escapeHtml(formattedDate)}</td>
+    </tr>
+  </table>
+
+  <div class="twoCols">
+    <div class="box">
+      <div class="boxTitle">1. Observe</div>
+      <div class="boxBody">
+        <ul class="bullets">
+          ${BRAND.observeGuidance.map(t => `<li><div class="arrow">➔</div><div>${escapeHtml(t)}</div></li>`).join("")}
+        </ul>
+      </div>
+    </div>
+    <div class="box">
+      <div class="boxTitle">2. Root Cause Classification</div>
+      <div class="boxBody">
+        <ul class="bullets">
+          ${BRAND.rootCauseGuidance.map(t => `<li><div class="arrow">➔</div><div>${escapeHtml(t)}</div></li>`).join("")}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="tables">
+    <div>
+      <table class="grid" id="tblLeft">
+        <colgroup>
+          <col style="width:35%"><col style="width:52%"><col style="width:13%"><col style="width:7mm"><col style="width:7mm">
+        </colgroup>
+        <thead>
+          <tr><th>Task</th><th>Comments</th><th>TEM notes</th><th>CP</th><th>FO</th></tr>
+        </thead>
+        <tbody>${obsTableBody}</tbody>
+      </table>
+    </div>
+
+    <div>
+      <table class="grid" id="tblRight">
+        <thead><tr>${OB_COLS_ORDER.map(c => `<th>${escapeHtml(c)}</th>`).join("")}</tr></thead>
+        <tbody>${obTableBody}</tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="footerRed">${escapeHtml(BRAND.footerRed)}</div>
 </div>
 
 <script>
@@ -1634,12 +1545,10 @@ function openPrintView() {
     const right = document.getElementById('tblRight');
     if (!left || !right) return;
 
-    const resetRowHeights = (tbl) => {
-      const trs = tbl.querySelectorAll('thead tr, tbody tr');
-      trs.forEach(tr => { tr.style.height = ''; });
+    const reset = (tbl) => {
+      tbl.querySelectorAll('thead tr, tbody tr').forEach(tr => tr.style.height = '');
     };
-    resetRowHeights(left);
-    resetRowHeights(right);
+    reset(left); reset(right);
 
     const lh = left.querySelector('thead tr');
     const rh = right.querySelector('thead tr');
@@ -1652,46 +1561,25 @@ function openPrintView() {
     const lrows = Array.from(left.querySelectorAll('tbody tr'));
     const rrows = Array.from(right.querySelectorAll('tbody tr'));
     const n = Math.min(lrows.length, rrows.length);
-
-    for (let i = 0; i < n; i++) {
-      const a = lrows[i];
-      const b = rrows[i];
-      const h = Math.max(a.getBoundingClientRect().height, b.getBoundingClientRect().height);
-      a.style.height = h + 'px';
-      b.style.height = h + 'px';
+    for (let i=0;i<n;i++){
+      const h = Math.max(lrows[i].getBoundingClientRect().height, rrows[i].getBoundingClientRect().height);
+      lrows[i].style.height = h + 'px';
+      rrows[i].style.height = h + 'px';
     }
   }
-
-  window.addEventListener('load', () => {
-    syncTableHeights();
-    setTimeout(syncTableHeights, 120);
-    setTimeout(syncTableHeights, 320);
-    window.focus();
-  });
-
-  window.addEventListener('resize', () => {
-    syncTableHeights();
-    setTimeout(syncTableHeights, 120);
-  });
-
-  window.addEventListener('orientationchange', () => {
-    setTimeout(syncTableHeights, 120);
-    setTimeout(syncTableHeights, 320);
-  });
+  window.addEventListener('load', () => { syncTableHeights(); setTimeout(syncTableHeights, 120); });
 </script>
 
 </body>
 </html>`;
 
   const w = window.open("", "_blank");
-  if (!w) {
-    alert("Popup blocked. Allow popups to generate PDF.");
-    return;
-  }
+  if (!w) { alert("Popup blocked. Allow popups to generate PDF."); return; }
   w.document.open();
   w.document.write(html);
   w.document.close();
 }
+
 
 
 /* =========================================================
