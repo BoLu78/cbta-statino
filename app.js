@@ -7,11 +7,17 @@
    ✅ UI/CRUD/Settings: same behavior as stable version
    ========================================================= */
 
-const BUILD_ID = "__BUILD_ID__"; // verrà sostituito automaticamente
+const BUILD_ID = "11feb26";
+function getAppVersionLabel() {
+  return "v" + BUILD_ID;
+}
+
 function injectAppVersion(){
   const el = document.getElementById("appVersion");
   if (!el) return;
-  el.textContent = "v" + BUILD_ID;
+  const versionLabel = getAppVersionLabel();
+  el.style.display = "";
+  el.textContent = versionLabel;
 }
 
 
@@ -1294,6 +1300,7 @@ function openPrintView() {
   const info = currentTrainingInfo();
   const rows = buildRowsForPrint();
   const formattedDate = fmtDate(info.date);
+  const appVersion = getAppVersionLabel();
 
   const logoUrl = new URL(BRAND.logoFile, window.location.href).href;
 
@@ -1301,16 +1308,16 @@ function openPrintView() {
     const cells = OB_COLS_ORDER.map(code => {
       const arr = ensureArray(r.competencies && r.competencies[code]);
       const txt = arr.length ? arr.join(",") : "";
-      return `<td class="cell obcell">${escapeHtml(txt)}</td>`;
+      return `<td class="cell obcell"><div class="clip clip-ob">${escapeHtml(txt)}</div></td>`;
     }).join("");
     return `<tr class="row">${cells}</tr>`;
   }).join("");
 
   const obsTableBody = rows.map(r => `
     <tr class="row">
-      <td class="cell task">${escapeHtml(r.task)}</td>
-      <td class="cell comment">${escapeHtml(r.comment)}</td>
-      <td class="cell tem">${escapeHtml(r.tem)}</td>
+      <td class="cell task"><div class="clip clip-task">${escapeHtml(r.task)}</div></td>
+      <td class="cell comment"><div class="clip clip-comment">${escapeHtml(r.comment)}</div></td>
+      <td class="cell tem"><div class="clip clip-tem">${escapeHtml(r.tem)}</div></td>
       <td class="cell mark">${escapeHtml(r.cp)}</td>
       <td class="cell mark">${escapeHtml(r.fo)}</td>
     </tr>
@@ -1324,137 +1331,254 @@ function openPrintView() {
 <title>CBTA Statino - Print</title>
 
 <style>
-  /* ===== PAPER ===== */
-  @page { size: A4 landscape; margin: 6mm; } /* Safari iPad NON rispetta sempre margin:0 */
-  html, body { margin:0; padding:0; background:#fff; }
-  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  body { font-family: Arial, Helvetica, sans-serif; color:#000; }
+  :root{
+    --paper-w: 297mm;
+    --paper-h: 210mm;
+    --page-padding: 4.2mm;
+    --screen-gap: 8px;
+    --safari-x: 0mm;
+    --ink:#000;
+    --grid:#000;
+    --bar:#d9d9d9;
+  }
 
-  /* ===== TOOLBAR (screen only) ===== */
+  @page { size: A4 landscape; margin: 0; }
+
+  html, body { margin:0; padding:0; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body{
+    background:#f3f4f6;
+    color:var(--ink);
+    font-family: Arial, Helvetica, sans-serif;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+  }
+
   .toolbar{
-    position: fixed; top: 8px; right: 10px; z-index: 9999;
-    display:flex; gap:8px;
+    position: fixed;
+    top: 8px;
+    right: 10px;
+    z-index: 9999;
+    display:flex;
+    gap:8px;
   }
   .btn{
-    padding:10px 12px; border-radius:10px;
-    border:1px solid #d7d7d7; background:#fff;
-    cursor:pointer; font-weight:700;
+    padding:10px 12px;
+    border-radius:10px;
+    border:1px solid #d7d7d7;
+    background:#fff;
+    cursor:pointer;
+    font-weight:700;
   }
 
-  /* ===== PAGE CANVAS (content box, inside @page margins) ===== */
+  .sheet{
+    width: min(var(--paper-w), calc(100vw - (var(--screen-gap) * 2)));
+    height: min(var(--paper-h), calc(100vh - (var(--screen-gap) * 2)));
+    margin: var(--screen-gap) auto;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    position:relative;
+    overflow:hidden;
+  }
   .page{
-    width: calc(297mm - 12mm);
-    height: calc(210mm - 12mm);
-    box-sizing: border-box;
-    overflow: hidden;
+    width:100%;
+    height:100%;
+    padding: var(--page-padding);
+    background:#fff;
+    box-sizing:border-box;
+    overflow:hidden;
+  }
+  .fitRoot{
+    width:100%;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    transform:none !important;
+    zoom:1;
+    margin:0;
+    overflow:hidden;
   }
 
-  /* ===== HEADER ===== */
   .headerTable { width:100%; border-collapse:collapse; table-layout:fixed; }
-  .headerTable td { border:1.2px solid #000; padding:3px 5px; vertical-align:middle; }
-  .colL { width: 22%; } .colC { width: 56%; } .colR { width: 22%; }
+  .headerTable td { border:1px solid var(--grid); padding:0.6px 4px; vertical-align:middle; }
+  .colL { width:24%; } .colC { width:52%; } .colR { width:24%; }
 
-  .logoCell img { width:100%; height:18mm; object-fit:contain; }
+  .logoCell { text-align:center; }
+  .logoCell img { width:100%; height:20mm; object-fit:contain; display:block; margin:0 auto; }
   .titleCell { text-align:center; }
-  .titleCell .t1 { font-size:16px; font-weight:900; }
-  .metaCell { font-size:10px; line-height:1.12; }
+  .titleCell .t1 { font-size:10.8px; font-weight:900; line-height:1; letter-spacing:0.1px; }
+  .metaCell { font-size:7.2px; line-height:1; }
 
-  .intro { margin:3px 0 5px; font-size:10.5px; line-height:1.15; }
+  .intro { margin:0.5px 0 1px; font-size:8px; line-height:1.03; }
 
   .bar {
-    border:1.2px solid #000; background:#d9d9d9;
-    font-weight:900; padding:4px 7px; font-size:12.5px;
+    border:1px solid var(--grid);
+    background:var(--bar);
+    font-weight:900;
+    padding:2px 6px;
+    font-size:9.4px;
+    letter-spacing:0.1px;
   }
 
-  /* TRAINING INFO */
-  .infoTable { width:100%; border-collapse:collapse; table-layout:fixed; margin: 0 0 5px; }
-  .infoTable td { border:1.2px solid #000; padding:4px 5px; font-size:12px; overflow:hidden; }
+  .infoTable { width:100%; border-collapse:collapse; table-layout:fixed; margin: 0 0 3px; }
+  .infoTable td { border:1px solid var(--grid); padding:2.2px 4px; font-size:8.4px; overflow:hidden; line-height:1.06; }
   .label { font-weight:800; }
-  .valueDate { white-space:nowrap; font-size:11.5px; }
+  .valueDate { white-space:nowrap; font-size:8.3px; }
 
-  /* OBS/ROOT CAUSE BOXES */
   .twoCols{
     display:grid;
     grid-template-columns: 1.15fr .85fr;
-    gap: 6mm;
+    gap: 3.5mm;
     width:100%;
-    margin: 0 0 5px;
+    margin: 0 0 2px;
   }
   .box{ display:flex; flex-direction:column; }
   .boxTitle{
-    border:1.2px solid #000; background:#d9d9d9;
-    font-weight:900; padding:4px 7px; font-size:12.5px;
+    border:1px solid var(--grid);
+    background:var(--bar);
+    font-weight:900;
+    padding:2.1px 6px;
+    font-size:9.3px;
   }
   .boxBody{
-    border-left:1.2px solid #000;
-    border-right:1.2px solid #000;
-    border-bottom:1.2px solid #000;
-    padding:4px 7px;
-    font-size:10.5px;
-    line-height:1.12;
+    border-left:1px solid var(--grid);
+    border-right:1px solid var(--grid);
+    border-bottom:1px solid var(--grid);
+    padding:2.1px 6px;
+    font-size:8.1px;
+    line-height:1.04;
     overflow:hidden;
   }
   .bullets { margin:0; padding:0; list-style:none; }
-  .bullets li { display:grid; grid-template-columns:6mm 1fr; gap:6px; margin:1px 0; }
-  .arrow { font-weight:900; font-size:14px; line-height:1; }
+  .bullets li { display:grid; grid-template-columns:5mm 1fr; gap:5px; margin:0.4px 0; }
+  .arrow { font-weight:900; font-size:11px; line-height:1; }
 
-  /* TABLES */
   .tables{
     display:grid;
     grid-template-columns: 1.15fr .85fr;
-    gap: 6mm;
+    gap: 3.5mm;
     width:100%;
+    flex:1 1 auto;
+    min-height:0;
   }
 
   table.grid { width:100%; border-collapse:collapse; table-layout:fixed; }
-  table.grid th, table.grid td { border:1.2px solid #000; vertical-align:middle; }
-  table.grid th { background:#f2f2f2; font-weight:900; padding:4px 5px; font-size:12px; }
-  table.grid td { padding:3px 5px; font-size:11px; text-align:center; }
+  table.grid th, table.grid td { border:1px solid var(--grid); vertical-align:middle; }
+  table.grid th { background:#f2f2f2; font-weight:900; padding:2.2px 4px; font-size:8.5px; line-height:1.01; }
+  table.grid td { padding:1.6px 4px; font-size:8.1px; text-align:center; line-height:1.02; overflow:hidden; }
 
-  /* IMPORTANT: altezza righe più bassa per stare in 1 pagina */
-  .row { height: 10mm; }
+  .row { height: 8mm; }
 
-  .cell { overflow:hidden; word-break:break-word; white-space:normal; }
+  .cell { overflow-wrap:anywhere; word-break:break-word; white-space:normal; }
   .task { width:35%; font-weight:700; text-align:left; }
   .comment { width:52%; text-align:left; }
   .tem { width:13%; }
   .mark { width:7mm; font-weight:900; }
 
-  .obcell { font-size:10px; }
-
-  .footerRed{
-    margin-top: 4px;
-    padding-top: 4px;
-    border-top: 1.2px solid #000;
-    color:#c40000;
-    font-size:10.5px;
-    font-weight:800;
-    line-height:1.1;
+  .obcell { font-size:8px; line-height:1.02; }
+  .clip{
+    display:block;
+    overflow:hidden;
+    width:100%;
+  }
+  .clip-task, .clip-comment, .clip-tem{
+    display:-webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-height:1.03;
+    max-height:2.2em;
+  }
+  .clip-ob{
+    display:-webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    line-height:1.02;
+    max-height:1.2em;
   }
 
-  /* ===== PRINT RULES ===== */
+  .footerRed{
+    margin-top: 3px;
+    padding-top: 3px;
+    border-top: 1px solid var(--grid);
+    color:#c40000;
+    font-size:8.9px;
+    font-weight:800;
+    line-height:1.06;
+  }
+
   @media print{
+    @page { size: A4 landscape; margin: 0; }
+    html, body{
+      width:var(--paper-w);
+      height:var(--paper-h);
+      margin:0 !important;
+      padding:0 !important;
+      overflow:hidden !important;
+      background:#fff !important;
+    }
+    body{
+      display:flex !important;
+      justify-content:center !important;
+      align-items:center !important;
+      min-height:var(--paper-h) !important;
+    }
     .toolbar{ display:none !important; }
-
-    /* NON bloccare contenitori grossi (causa “buco” e pagina 2 su iPad) */
-    .page, .tables, table.grid { break-inside:auto !important; page-break-inside:auto !important; }
-
-    /* blocca solo le righe (evita righe spezzate) */
-    tr { break-inside: avoid !important; page-break-inside: avoid !important; }
-
-    /* assicura niente overflow che spinge su pagina 2 */
-    html, body { overflow:hidden !important; }
+    .sheet{
+      width:var(--paper-w) !important;
+      height:var(--paper-h) !important;
+      margin:0 !important;
+      left:var(--safari-x) !important;
+      break-inside: avoid-page;
+      page-break-inside: avoid;
+      break-after: avoid-page;
+      page-break-after: avoid;
+    }
+    .page{
+      width:100% !important;
+      height:100% !important;
+      margin:0 !important;
+      padding: var(--page-padding) !important;
+      box-shadow:none !important;
+      overflow:hidden !important;
+      break-inside: avoid-page;
+      page-break-inside: avoid;
+      break-after: avoid-page;
+      page-break-after: avoid;
+    }
+    html, body, .sheet, .page{
+      break-after: avoid-page !important;
+      page-break-after: avoid !important;
+    }
+    .fitRoot,
+    .headerTable,
+    .infoTable,
+    .twoCols,
+    .tables,
+    table.grid,
+    .footerRed{
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
+    tr {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
   }
 </style>
 </head>
 
 <body>
 <div class="toolbar">
-  <button class="btn" onclick="window.print()">Print / Save PDF</button>
+  <button class="btn" onclick="triggerPrint()">Print / Save PDF</button>
   <button class="btn" onclick="window.close()">Close</button>
 </div>
 
+<div class="sheet" id="sheet">
 <div class="page">
+  <div class="fitRoot" id="fitRoot">
 
   <table class="headerTable">
     <colgroup><col class="colL"/><col class="colC"/><col class="colR"/></colgroup>
@@ -1466,6 +1590,7 @@ function openPrintView() {
         <div>${escapeHtml(BRAND.metaRight.revision)}</div>
         <div>${escapeHtml(BRAND.metaRight.date)}</div>
         <div>${escapeHtml(BRAND.metaRight.edited)}</div>
+        <div>App version: ${escapeHtml(appVersion)}</div>
       </td>
     </tr>
   </table>
@@ -1538,8 +1663,61 @@ function openPrintView() {
 
   <div class="footerRed">${escapeHtml(BRAND.footerRed)}</div>
 </div>
+</div>
+</div>
 
 <script>
+  function delay(ms){
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  function nextFrame(){
+    return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  }
+
+  function isSafariEngine(){
+    const ua = navigator.userAgent || "";
+    return /Safari/i.test(ua) && !/Chrome|CriOS|Edg|OPR|FxiOS|Firefox|Android/i.test(ua);
+  }
+
+  function applyBrowserNudge(){
+    const nudge = isSafariEngine() ? "-1.4mm" : "0mm";
+    document.documentElement.style.setProperty("--safari-x", nudge);
+  }
+
+  function waitForImageReady(img){
+    return new Promise(resolve => {
+      const timeoutId = setTimeout(resolve, 1800);
+      const done = () => {
+        clearTimeout(timeoutId);
+        if (typeof img.decode === "function") {
+          img.decode().catch(() => {}).finally(resolve);
+          return;
+        }
+        resolve();
+      };
+
+      if (img.complete) {
+        done();
+        return;
+      }
+
+      img.addEventListener("load", done, { once: true });
+      img.addEventListener("error", () => {
+        clearTimeout(timeoutId);
+        resolve();
+      }, { once: true });
+    });
+  }
+
+  async function waitForAssetsReady(){
+    const images = Array.from(document.images || []);
+    await Promise.all(images.map(waitForImageReady));
+    if (document.fonts && document.fonts.ready) {
+      try { await document.fonts.ready; } catch {}
+    }
+  }
+
   function syncTableHeights(){
     const left = document.getElementById('tblLeft');
     const right = document.getElementById('tblRight');
@@ -1567,7 +1745,66 @@ function openPrintView() {
       rrows[i].style.height = h + 'px';
     }
   }
-  window.addEventListener('load', () => { syncTableHeights(); setTimeout(syncTableHeights, 120); });
+
+  function fitToSingleA4Page(){
+    const fitRoot = document.getElementById('fitRoot');
+    if (!fitRoot) return;
+
+    fitRoot.style.zoom = '1';
+    fitRoot.style.transform = 'none';
+    fitRoot.style.margin = '0';
+  }
+
+  function applyPrintLayout(){
+    syncTableHeights();
+    fitToSingleA4Page();
+    syncTableHeights();
+    fitToSingleA4Page();
+  }
+
+  let preparePromise = null;
+  let printInFlight = false;
+
+  async function ensurePrintReady(){
+    if (!preparePromise) {
+      preparePromise = (async () => {
+        applyBrowserNudge();
+        await waitForAssetsReady();
+        applyPrintLayout();
+        await nextFrame();
+        applyPrintLayout();
+        await delay(70);
+        applyPrintLayout();
+      })();
+    }
+    await preparePromise;
+  }
+
+  async function triggerPrint(){
+    if (printInFlight) return;
+    printInFlight = true;
+    try {
+      await ensurePrintReady();
+      await delay(60);
+      window.print();
+    } finally {
+      setTimeout(() => { printInFlight = false; }, 300);
+    }
+  }
+
+  window.addEventListener('load', () => {
+    ensurePrintReady().catch(() => {
+      applyBrowserNudge();
+      applyPrintLayout();
+      setTimeout(applyPrintLayout, 120);
+      setTimeout(applyPrintLayout, 320);
+    });
+  });
+  window.addEventListener('resize', applyPrintLayout);
+  window.addEventListener('beforeprint', () => {
+    applyBrowserNudge();
+    applyPrintLayout();
+  });
 </script>
 
 </body>
