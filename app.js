@@ -7,7 +7,7 @@
    ✅ UI/CRUD/Settings: same behavior as stable version
    ========================================================= */
 
-const BUILD_ID = "12feb26-v1";
+const BUILD_ID = "12feb26-v2";
 function getAppVersionLabel() {
   return "v" + BUILD_ID;
 }
@@ -1344,7 +1344,7 @@ function openPrintView() {
     --bar:#d9d9d9;
   }
 
-  @page { size: A4 landscape; margin: 0; }
+  @page { size: A4 landscape; margin: 8mm; }
 
   html, body { margin:0; padding:0; }
   html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -1376,8 +1376,8 @@ function openPrintView() {
   }
 
   .sheet{
-    width: min(var(--paper-w), calc(100vw - (var(--screen-gap) * 2)));
-    height: min(var(--paper-h), calc(100vh - (var(--screen-gap) * 2)));
+    width: min(calc(var(--paper-w) - 16mm), calc(100vw - (var(--screen-gap) * 2)));
+    height: min(calc(var(--paper-h) - 16mm), calc(100vh - (var(--screen-gap) * 2)));
     margin: var(--screen-gap) auto;
     display:flex;
     justify-content:center;
@@ -1399,12 +1399,22 @@ function openPrintView() {
     box-sizing:border-box;
     display:flex;
     flex-direction:column;
-    position:relative;
-    padding-bottom:8mm;
     transform:none !important;
     zoom:1;
     margin:0;
     overflow:hidden;
+  }
+
+  .print-content{
+    display:flex;
+    flex-direction:column;
+    flex:1 1 auto;
+    min-height:0;
+  }
+
+  .no-break{
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .headerTable { width:100%; border-collapse:collapse; table-layout:fixed; }
@@ -1466,7 +1476,7 @@ function openPrintView() {
     grid-template-columns: 1.15fr .85fr;
     gap: 3.5mm;
     width:100%;
-    margin-bottom:6mm;
+    margin-bottom:2px;
     flex:1 1 auto;
     min-height:0;
   }
@@ -1506,24 +1516,20 @@ function openPrintView() {
   }
 
   .footerRed{
-    position:absolute;
-    left:0;
-    right:0;
-    bottom:0;
-    margin:0;
-    padding-top: 3px;
+    margin-top:2px;
+    padding-top:2px;
     border-top: 1px solid var(--grid);
     color:#c40000;
-    font-size:8.9px;
+    font-size:8.55px;
     font-weight:800;
-    line-height:1.06;
+    line-height:1.1;
   }
 
   @media print{
-    @page { size: A4 landscape; margin: 0; }
+    @page { size: A4 landscape; margin: 8mm; }
     html, body{
-      width:var(--paper-w);
-      height:var(--paper-h);
+      width:100%;
+      height:100%;
       margin:0 !important;
       padding:0 !important;
       overflow:hidden !important;
@@ -1537,8 +1543,8 @@ function openPrintView() {
     }
     .toolbar{ display:none !important; }
     .sheet{
-      width:calc(var(--paper-w) - 0.4mm) !important;
-      height:calc(var(--paper-h) - 0.4mm) !important;
+      width:calc(var(--paper-w) - 16mm) !important;
+      height:calc(var(--paper-h) - 16mm) !important;
       margin:0 !important;
       left:var(--safari-x) !important;
       break-inside: avoid-page;
@@ -1562,6 +1568,7 @@ function openPrintView() {
       break-after: avoid-page !important;
       page-break-after: avoid !important;
     }
+    .print-content,
     .fitRoot,
     .headerTable,
     .infoTable,
@@ -1576,11 +1583,16 @@ function openPrintView() {
       zoom: var(--print-zoom) !important;
       transform: none !important;
     }
-    .footerRed{
+    .print-content,
+    .print-content *{
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+    .print-footer{
+      margin-top:2px !important;
       padding-top:2px !important;
-      font-size:8.7px !important;
-      line-height:1.03 !important;
-      margin:0 !important;
+      font-size:0.95em !important;
+      line-height:1.1 !important;
       break-before: avoid-page !important;
       page-break-before: avoid !important;
     }
@@ -1599,7 +1611,7 @@ function openPrintView() {
 </div>
 
 <div class="sheet" id="sheet">
-<div class="page">
+<div class="page print-page">
   <div class="fitRoot" id="fitRoot">
 
   <table class="headerTable">
@@ -1662,28 +1674,30 @@ function openPrintView() {
     </div>
   </div>
 
-  <div class="tables">
-    <div>
-      <table class="grid" id="tblLeft">
-        <colgroup>
-          <col style="width:35%"><col style="width:52%"><col style="width:13%"><col style="width:7mm"><col style="width:7mm">
-        </colgroup>
-        <thead>
-          <tr><th>Task</th><th>Comments</th><th>TEM notes</th><th>CP</th><th>FO</th></tr>
-        </thead>
-        <tbody>${obsTableBody}</tbody>
-      </table>
+  <div class="print-content no-break">
+    <div class="tables">
+      <div>
+        <table class="grid" id="tblLeft">
+          <colgroup>
+            <col style="width:35%"><col style="width:52%"><col style="width:13%"><col style="width:7mm"><col style="width:7mm">
+          </colgroup>
+          <thead>
+            <tr><th>Task</th><th>Comments</th><th>TEM notes</th><th>CP</th><th>FO</th></tr>
+          </thead>
+          <tbody>${obsTableBody}</tbody>
+        </table>
+      </div>
+
+      <div>
+        <table class="grid" id="tblRight">
+          <thead><tr>${OB_COLS_ORDER.map(c => `<th>${escapeHtml(c)}</th>`).join("")}</tr></thead>
+          <tbody>${obTableBody}</tbody>
+        </table>
+      </div>
     </div>
 
-    <div>
-      <table class="grid" id="tblRight">
-        <thead><tr>${OB_COLS_ORDER.map(c => `<th>${escapeHtml(c)}</th>`).join("")}</tr></thead>
-        <tbody>${obTableBody}</tbody>
-      </table>
-    </div>
+    <div class="footerRed print-footer">${escapeHtml(BRAND.footerRed)}</div>
   </div>
-
-  <div class="footerRed">${escapeHtml(BRAND.footerRed)}</div>
 </div>
 </div>
 </div>
@@ -1785,7 +1799,7 @@ function openPrintView() {
     if (!maxW || !maxH || !contentW || !contentH) return;
 
     const fitScale = Math.min(1, maxW / contentW, maxH / contentH);
-    const safety = isSafariEngine() ? 0.985 : 0.992;
+    const safety = isSafariEngine() ? 0.98 : 0.992;
     const finalScale = Math.min(1, fitScale * safety);
     const zoomValue = String(Math.max(0.96, finalScale).toFixed(3));
     fitRoot.style.zoom = zoomValue;
