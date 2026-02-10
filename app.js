@@ -7,7 +7,7 @@
    ✅ UI/CRUD/Settings: same behavior as stable version
    ========================================================= */
 
-const BUILD_ID = "12feb26-v2";
+const BUILD_ID = "12feb26-v3";
 function getAppVersionLabel() {
   return "v" + BUILD_ID;
 }
@@ -1476,7 +1476,7 @@ function openPrintView() {
     grid-template-columns: 1.15fr .85fr;
     gap: 3.5mm;
     width:100%;
-    margin-bottom:2px;
+    margin-bottom:1px;
     flex:1 1 auto;
     min-height:0;
   }
@@ -1536,13 +1536,12 @@ function openPrintView() {
       background:#fff !important;
     }
     body{
-      display:flex !important;
-      justify-content:center !important;
-      align-items:center !important;
+      display:block !important;
       min-height:0 !important;
     }
     .toolbar{ display:none !important; }
     .sheet{
+      display:block !important;
       width:calc(var(--paper-w) - 16mm) !important;
       height:calc(var(--paper-h) - 16mm) !important;
       margin:0 !important;
@@ -1553,6 +1552,7 @@ function openPrintView() {
       page-break-after: avoid;
     }
     .page{
+      display:block !important;
       width:100% !important;
       height:100% !important;
       margin:0 !important;
@@ -1580,19 +1580,40 @@ function openPrintView() {
       page-break-inside: avoid !important;
     }
     .fitRoot{
+      display:block !important;
       zoom: var(--print-zoom) !important;
       transform: none !important;
+    }
+    .print-content{
+      display:block !important;
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
     }
     .print-content,
     .print-content *{
       page-break-inside: avoid !important;
       break-inside: avoid !important;
     }
+    .print-content.print-body{
+      display:block !important;
+      width:100% !important;
+      vertical-align:top !important;
+      margin:0 !important;
+      padding:0 !important;
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
+    .tables,
+    .tables > div{
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
     .print-footer{
-      margin-top:2px !important;
-      padding-top:2px !important;
-      font-size:0.95em !important;
-      line-height:1.1 !important;
+      margin-top:1px !important;
+      padding-top:1px !important;
+      font-size:0.93em !important;
+      line-height:1.05 !important;
+      margin-bottom:0 !important;
       break-before: avoid-page !important;
       page-break-before: avoid !important;
     }
@@ -1674,7 +1695,7 @@ function openPrintView() {
     </div>
   </div>
 
-  <div class="print-content no-break">
+  <div class="print-content print-body no-break">
     <div class="tables">
       <div>
         <table class="grid" id="tblLeft">
@@ -1799,7 +1820,7 @@ function openPrintView() {
     if (!maxW || !maxH || !contentW || !contentH) return;
 
     const fitScale = Math.min(1, maxW / contentW, maxH / contentH);
-    const safety = isSafariEngine() ? 0.98 : 0.992;
+    const safety = isSafariEngine() ? 0.975 : 0.992;
     const finalScale = Math.min(1, fitScale * safety);
     const zoomValue = String(Math.max(0.96, finalScale).toFixed(3));
     fitRoot.style.zoom = zoomValue;
