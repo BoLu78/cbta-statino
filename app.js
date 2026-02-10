@@ -7,7 +7,7 @@
    ✅ UI/CRUD/Settings: same behavior as stable version
    ========================================================= */
 
-const BUILD_ID = "12feb26-v3";
+const BUILD_ID = "12feb26-v4";
 function getAppVersionLabel() {
   return "v" + BUILD_ID;
 }
@@ -1418,53 +1418,53 @@ function openPrintView() {
   }
 
   .headerTable { width:100%; border-collapse:collapse; table-layout:fixed; }
-  .headerTable td { border:1px solid var(--grid); padding:0.6px 4px; vertical-align:middle; }
+  .headerTable td { border:1px solid var(--grid); padding:0.4px 3px; vertical-align:middle; }
   .colL { width:24%; } .colC { width:52%; } .colR { width:24%; }
 
   .logoCell { text-align:center; }
-  .logoCell img { width:100%; height:20mm; object-fit:contain; display:block; margin:0 auto; }
+  .logoCell img { width:100%; height:40mm; object-fit:contain; display:block; margin:0 auto; }
   .titleCell { text-align:center; }
-  .titleCell .t1 { font-size:10.8px; font-weight:900; line-height:1; letter-spacing:0.1px; }
-  .metaCell { font-size:7.2px; line-height:1; }
+  .titleCell .t1 { font-size:10px; font-weight:900; line-height:1; letter-spacing:0.08px; }
+  .metaCell { font-size:6.7px; line-height:0.98; }
 
-  .intro { margin:0.5px 0 1px; font-size:8px; line-height:1.03; }
+  .intro { margin:0.2px 0 0.6px; font-size:7.6px; line-height:1.01; }
 
   .bar {
     border:1px solid var(--grid);
     background:var(--bar);
     font-weight:900;
-    padding:2px 6px;
-    font-size:9.4px;
+    padding:1.6px 6px;
+    font-size:9px;
     letter-spacing:0.1px;
   }
 
-  .infoTable { width:100%; border-collapse:collapse; table-layout:fixed; margin: 0 0 3px; }
-  .infoTable td { border:1px solid var(--grid); padding:2.2px 4px; font-size:8.4px; overflow:hidden; line-height:1.06; }
+  .infoTable { width:100%; border-collapse:collapse; table-layout:fixed; margin: 0 0 2px; }
+  .infoTable td { border:1px solid var(--grid); padding:1.8px 3.6px; font-size:7.9px; overflow:hidden; line-height:1.02; }
   .label { font-weight:800; }
-  .valueDate { white-space:nowrap; font-size:8.3px; }
+  .valueDate { white-space:nowrap; font-size:7.7px; }
 
   .twoCols{
     display:grid;
     grid-template-columns: 1.15fr .85fr;
     gap: 3.5mm;
     width:100%;
-    margin: 0 0 2px;
+    margin: 0 0 1px;
   }
   .box{ display:flex; flex-direction:column; }
   .boxTitle{
     border:1px solid var(--grid);
     background:var(--bar);
     font-weight:900;
-    padding:2.1px 6px;
-    font-size:9.3px;
+    padding:1.8px 6px;
+    font-size:8.9px;
   }
   .boxBody{
     border-left:1px solid var(--grid);
     border-right:1px solid var(--grid);
     border-bottom:1px solid var(--grid);
-    padding:2.1px 6px;
-    font-size:8.1px;
-    line-height:1.04;
+    padding:1.8px 6px;
+    font-size:7.8px;
+    line-height:1.02;
     overflow:hidden;
   }
   .bullets { margin:0; padding:0; list-style:none; }
@@ -1516,13 +1516,15 @@ function openPrintView() {
   }
 
   .footerRed{
-    margin-top:2px;
-    padding-top:2px;
+    margin-top:1px;
+    padding-top:1px;
     border-top: 1px solid var(--grid);
     color:#c40000;
-    font-size:8.55px;
+    font-size:7.4px;
     font-weight:800;
-    line-height:1.1;
+    line-height:1.04;
+    white-space:normal;
+    overflow-wrap:anywhere;
   }
 
   @media print{
@@ -1544,8 +1546,8 @@ function openPrintView() {
       display:block !important;
       width:calc(var(--paper-w) - 16mm) !important;
       height:calc(var(--paper-h) - 16mm) !important;
-      margin:0 !important;
-      left:var(--safari-x) !important;
+      margin:0 auto !important;
+      left:auto !important;
       break-inside: avoid-page;
       page-break-inside: avoid;
       break-after: avoid-page;
@@ -1611,9 +1613,11 @@ function openPrintView() {
     .print-footer{
       margin-top:1px !important;
       padding-top:1px !important;
-      font-size:0.93em !important;
-      line-height:1.05 !important;
+      font-size:0.88em !important;
+      line-height:1.04 !important;
       margin-bottom:0 !important;
+      white-space:normal !important;
+      overflow-wrap:anywhere !important;
       break-before: avoid-page !important;
       page-break-before: avoid !important;
     }
@@ -1738,7 +1742,7 @@ function openPrintView() {
   }
 
   function applyBrowserNudge(){
-    const nudge = isSafariEngine() ? "-1.4mm" : "0mm";
+    const nudge = "0mm";
     document.documentElement.style.setProperty("--safari-x", nudge);
   }
 
