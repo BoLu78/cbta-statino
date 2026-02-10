@@ -1252,9 +1252,9 @@ function ensureResetButton() {
    CAPITOLO 16 — EXPORT / PRINT
    (1 PAGINA • A4 • LANDSCAPE • iPad Safari stable)
    FIX:
-   ✅ 1 pagina senza transform scale (Safari iPad)
-   ✅ A4 landscape reale con margini controllati
-   ✅ Logo sempre visibile (URL assoluto)
+   ✅ Logo sempre visibile (URL assoluto, no about:blank issues)
+   ✅ NO "break-inside: avoid" sulle tabelle (evita il buco e la pagina 2)
+   ✅ 1 pagina: altezza righe + padding ottimizzati
    ✅ Tabelle allineate (header + righe stessa altezza)
    ========================================================= */
 
@@ -1296,7 +1296,7 @@ function openPrintView() {
   const rows = buildRowsForPrint();
   const formattedDate = fmtDate(info.date);
 
-  // ✅ FIX LOGO: URL assoluto (funziona anche in about:blank)
+  // ✅ LOGO: URL assoluto (funziona anche in about:blank)
   const logoUrl = new URL(BRAND.logoFile, window.location.href).href;
 
   const obTableBody = rows
@@ -1331,14 +1331,14 @@ function openPrintView() {
 
 <style>
   /* =========================
-     PAPER: A4 LANDSCAPE • 1 PAGE
+     PAPER: A4 LANDSCAPE
      ========================= */
   @page { size: A4 landscape; margin: 6mm; }
 
   html, body {
-    margin: 0 !important;
-    padding: 0 !important;
-    background: #fff !important;
+    margin: 0;
+    padding: 0;
+    background: #fff;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -1346,7 +1346,7 @@ function openPrintView() {
   body { font-family: Arial, Helvetica, sans-serif; color:#000; }
 
   /* =========================
-     SCREEN PREVIEW
+     SCREEN PREVIEW (solo preview)
      ========================= */
   .toolbar {
     position: fixed;
@@ -1364,7 +1364,6 @@ function openPrintView() {
     cursor: pointer;
     font-weight: 700;
   }
-
   .screen {
     display: flex;
     justify-content: center;
@@ -1373,19 +1372,16 @@ function openPrintView() {
   }
 
   /* =========================
-     PAGE CANVAS
-     NOTA: stampiamo dentro l’area A4 *meno* margini (@page margin 6mm):
-           297-12 = 285mm
-           210-12 = 198mm
+     PAGE CANVAS (area stampabile A4 meno margini)
+     @page margin 6mm -> area = 285mm x 198mm
      ========================= */
   .page {
     width: 285mm;
     height: 198mm;
     box-sizing: border-box;
     padding: 8mm;
+    overflow: hidden; /* fondamentale: niente pagina 2 */
     background: #fff;
-    overflow: hidden;        /* no pagina 2 */
-    position: relative;
   }
 
   /* =========================
@@ -1400,7 +1396,7 @@ function openPrintView() {
 
   .logoCell img { width:100%; height:22mm; object-fit:contain; }
   .titleCell { text-align:center; }
-  .titleCell .t1 { font-size:17px; font-weight:900; } /* leggermente ridotto per sicurezza 1 pagina */
+  .titleCell .t1 { font-size:17px; font-weight:900; }
   .metaCell { font-size:10.5px; line-height:1.15; }
 
   .intro { margin:4px 0 8px; font-size:11px; line-height:1.2; }
@@ -1448,8 +1444,8 @@ function openPrintView() {
   table.grid th { background:#f2f2f2; font-weight:900; padding:5px 6px; font-size:13px; }
   table.grid td { padding:5px 6px; font-size:12px; text-align:center; }
 
-  /* Altezza riga: leggermente più bassa per garantire 1 pagina */
-  .row { height:11mm; }
+  /* 1 PAGINA: qui è il rubinetto */
+  .row { height:10mm; }
 
   .cell { overflow:hidden; word-break:break-word; white-space:normal; }
   .task { width:35%; font-weight:700; text-align:left; }
@@ -1468,19 +1464,41 @@ function openPrintView() {
   }
 
   /* =========================
-     PRINT RULES (NO SCALE!)
+     PRINT RULES (chiave)
+     - NON bloccare le tabelle con break-inside: avoid
+     - blocca solo header/box/footer
+     - evita che una singola riga si spezzi
      ========================= */
   @media print {
-    .toolbar, .screen { display: none !important; }
+    .toolbar { display:none !important; }
 
-    /* in stampa il body contiene solo .page */
-    body { background: #fff !important; }
+    /* IMPORTANTISSIMO: non nascondere .screen (contiene .page) */
+    .screen { display:block !important; padding:0 !important; background:#fff !important; }
 
-    /* evita spezzamenti */
-    .page, table, tr, td, th, .twoCols, .tables {
+    html, body { margin:0 !important; padding:0 !important; background:#fff !important; }
+
+    /* Non spezzare SOLO questi blocchi */
+    .headerTable, .infoTable, .twoCols, .box, .footerRed {
       break-inside: avoid !important;
       page-break-inside: avoid !important;
     }
+
+    /* Le tabelle devono poter stare nella pagina (non “spinte”) */
+    .tables, table.grid {
+      break-inside: auto !important;
+      page-break-inside: auto !important;
+    }
+
+    /* Evita spezzamento di una singola riga */
+    table.grid tr {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
+
+    /* Forza compattazione in stampa */
+    .row { height:10mm !important; }
+    table.grid td { padding: 4px 5px !important; font-size: 11px !important; }
+    table.grid th { padding: 4px 5px !important; font-size: 12px !important; }
   }
 </style>
 </head>
