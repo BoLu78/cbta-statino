@@ -7,7 +7,7 @@
    ✅ UI/CRUD/Settings: same behavior as stable version
    ========================================================= */
 
-const BUILD_ID = "12feb26-v4";
+const BUILD_ID = "12feb26-v5";
 function getAppVersionLabel() {
   return "v" + BUILD_ID;
 }
@@ -1421,27 +1421,27 @@ function openPrintView() {
   .headerTable td { border:1px solid var(--grid); padding:0.4px 3px; vertical-align:middle; }
   .colL { width:24%; } .colC { width:52%; } .colR { width:24%; }
 
-  .logoCell { text-align:center; }
-  .logoCell img { width:100%; height:40mm; object-fit:contain; display:block; margin:0 auto; }
+  .logoCell { text-align:center; padding:0 !important; }
+  .logoCell img { width:100%; height:34mm; object-fit:contain; display:block; margin:0 auto; }
   .titleCell { text-align:center; }
-  .titleCell .t1 { font-size:10px; font-weight:900; line-height:1; letter-spacing:0.08px; }
-  .metaCell { font-size:6.7px; line-height:0.98; }
+  .titleCell .t1 { font-size:10.6px; font-weight:900; line-height:1; letter-spacing:0.08px; }
+  .metaCell { font-size:6.9px; line-height:1; }
 
-  .intro { margin:0.2px 0 0.6px; font-size:7.6px; line-height:1.01; }
+  .intro { margin:0.1px 0 0.4px; font-size:7.8px; line-height:1.01; }
 
   .bar {
     border:1px solid var(--grid);
     background:var(--bar);
     font-weight:900;
-    padding:1.6px 6px;
-    font-size:9px;
+    padding:1.4px 6px;
+    font-size:9.1px;
     letter-spacing:0.1px;
   }
 
-  .infoTable { width:100%; border-collapse:collapse; table-layout:fixed; margin: 0 0 2px; }
-  .infoTable td { border:1px solid var(--grid); padding:1.8px 3.6px; font-size:7.9px; overflow:hidden; line-height:1.02; }
+  .infoTable { width:100%; border-collapse:collapse; table-layout:fixed; margin: 0 0 1px; }
+  .infoTable td { border:1px solid var(--grid); padding:1.6px 3.4px; font-size:8px; overflow:hidden; line-height:1.01; }
   .label { font-weight:800; }
-  .valueDate { white-space:nowrap; font-size:7.7px; }
+  .valueDate { white-space:nowrap; font-size:7.8px; }
 
   .twoCols{
     display:grid;
@@ -1548,6 +1548,7 @@ function openPrintView() {
       height:calc(var(--paper-h) - 16mm) !important;
       margin:0 auto !important;
       left:auto !important;
+      overflow:visible !important;
       break-inside: avoid-page;
       page-break-inside: avoid;
       break-after: avoid-page;
@@ -1558,9 +1559,12 @@ function openPrintView() {
       width:100% !important;
       height:100% !important;
       margin:0 !important;
-      padding: var(--page-padding) !important;
+      padding-top: var(--page-padding) !important;
+      padding-bottom: var(--page-padding) !important;
+      padding-left: var(--page-padding) !important;
+      padding-right: calc(var(--page-padding) + 0.8mm) !important;
       box-shadow:none !important;
-      overflow:hidden !important;
+      overflow:visible !important;
       break-inside: avoid-page;
       page-break-inside: avoid;
       break-after: avoid-page;
@@ -1585,6 +1589,7 @@ function openPrintView() {
       display:block !important;
       zoom: var(--print-zoom) !important;
       transform: none !important;
+      overflow:visible !important;
     }
     .print-content{
       display:block !important;
@@ -1609,6 +1614,10 @@ function openPrintView() {
     .tables > div{
       break-inside: avoid !important;
       page-break-inside: avoid !important;
+    }
+    .tables{
+      width: calc(100% - 0.8mm) !important;
+      margin: 0 auto !important;
     }
     .print-footer{
       margin-top:1px !important;
