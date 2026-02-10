@@ -7,7 +7,9 @@
    ✅ UI/CRUD/Settings: same behavior as stable version
    ========================================================= */
 
-console.log("CBTA STATINO VERSION:", "2026-02-08 PRINT FIX v2");
+const APP_VERSION = "2026.02.10-17:24";
+console.log("CBTA STATINO VERSION:", APP_VERSION);
+
 
 const STORAGE_KEY = "cbta_statino_v1";
 
@@ -1702,3 +1704,4 @@ attachAutoSave();
 setAddButtonLabel();
 ensureExportButton();
 ensureResetButton();
+injectAppVersion();
