@@ -7,7 +7,7 @@
    ✅ UI/CRUD/Settings: same behavior as stable version
    ========================================================= */
 
-const BUILD_ID = "11feb26";
+const BUILD_ID = "12feb26-v1";
 function getAppVersionLabel() {
   return "v" + BUILD_ID;
 }
@@ -19,6 +19,7 @@ function injectAppVersion(){
   el.style.display = "";
   el.textContent = versionLabel;
 }
+console.log("APP.JS VERSIONE:", getAppVersionLabel());
 
 
 /* =========================================================
@@ -1337,6 +1338,7 @@ function openPrintView() {
     --page-padding: 4.2mm;
     --screen-gap: 8px;
     --safari-x: 0mm;
+    --print-zoom: 1;
     --ink:#000;
     --grid:#000;
     --bar:#d9d9d9;
@@ -1531,12 +1533,12 @@ function openPrintView() {
       display:flex !important;
       justify-content:center !important;
       align-items:center !important;
-      min-height:var(--paper-h) !important;
+      min-height:0 !important;
     }
     .toolbar{ display:none !important; }
     .sheet{
-      width:var(--paper-w) !important;
-      height:var(--paper-h) !important;
+      width:calc(var(--paper-w) - 0.4mm) !important;
+      height:calc(var(--paper-h) - 0.4mm) !important;
       margin:0 !important;
       left:var(--safari-x) !important;
       break-inside: avoid-page;
@@ -1569,6 +1571,18 @@ function openPrintView() {
     .footerRed{
       break-inside: avoid !important;
       page-break-inside: avoid !important;
+    }
+    .fitRoot{
+      zoom: var(--print-zoom) !important;
+      transform: none !important;
+    }
+    .footerRed{
+      padding-top:2px !important;
+      font-size:8.7px !important;
+      line-height:1.03 !important;
+      margin:0 !important;
+      break-before: avoid-page !important;
+      page-break-before: avoid !important;
     }
     tr {
       break-inside: avoid !important;
@@ -1755,12 +1769,27 @@ function openPrintView() {
   }
 
   function fitToSingleA4Page(){
+    const page = document.querySelector('.page');
     const fitRoot = document.getElementById('fitRoot');
-    if (!fitRoot) return;
+    if (!fitRoot || !page) return;
 
     fitRoot.style.zoom = '1';
     fitRoot.style.transform = 'none';
     fitRoot.style.margin = '0';
+
+    const maxW = page.clientWidth;
+    const maxH = page.clientHeight;
+    const contentW = fitRoot.scrollWidth;
+    const contentH = fitRoot.scrollHeight;
+
+    if (!maxW || !maxH || !contentW || !contentH) return;
+
+    const fitScale = Math.min(1, maxW / contentW, maxH / contentH);
+    const safety = isSafariEngine() ? 0.985 : 0.992;
+    const finalScale = Math.min(1, fitScale * safety);
+    const zoomValue = String(Math.max(0.96, finalScale).toFixed(3));
+    fitRoot.style.zoom = zoomValue;
+    document.documentElement.style.setProperty('--print-zoom', zoomValue);
   }
 
   function applyPrintLayout(){
