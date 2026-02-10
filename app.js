@@ -7,11 +7,13 @@
    ✅ UI/CRUD/Settings: same behavior as stable version
    ========================================================= */
 
-const APP_VERSION = "2026.02.10-17:32";
-console.log("CBTA STATINO VERSION:", APP_VERSION);
+const BUILD_ID = "__BUILD_ID__"; // verrà sostituito automaticamente
+function injectAppVersion(){
+  const el = document.getElementById("appVersion");
+  if (!el) return;
+  el.textContent = "v" + BUILD_ID;
+}
 
-
-const STORAGE_KEY = "cbta_statino_v1";
 
 /* =========================================================
    CAPITOLO 1 — BRAND / PRINT TEXT
