@@ -1250,10 +1250,11 @@ function ensureResetButton() {
 
 /* =========================================================
    CAPITOLO 16 — EXPORT / PRINT
-   (1 PAGINA • A4 • LANDSCAPE • iPad Safari anti-spill)
+   (1 PAGINA • A4 • LANDSCAPE • iPad Safari stable)
    FIX:
-   ✅ Logo sempre visibile (URL assoluto, no about:blank issues)
-   ✅ 1 pagina (scala .page, no body scaling)
+   ✅ 1 pagina senza transform scale (Safari iPad)
+   ✅ A4 landscape reale con margini controllati
+   ✅ Logo sempre visibile (URL assoluto)
    ✅ Tabelle allineate (header + righe stessa altezza)
    ========================================================= */
 
@@ -1295,7 +1296,7 @@ function openPrintView() {
   const rows = buildRowsForPrint();
   const formattedDate = fmtDate(info.date);
 
-  // ✅ FIX LOGO: usa URL assoluto (funziona anche nella finestra about:blank)
+  // ✅ FIX LOGO: URL assoluto (funziona anche in about:blank)
   const logoUrl = new URL(BRAND.logoFile, window.location.href).href;
 
   const obTableBody = rows
@@ -1329,19 +1330,24 @@ function openPrintView() {
 <title>CBTA Statino - Print</title>
 
 <style>
-  /* ===== PAPER ===== */
-  @page { size: A4 landscape; margin: 0; }
+  /* =========================
+     PAPER: A4 LANDSCAPE • 1 PAGE
+     ========================= */
+  @page { size: A4 landscape; margin: 6mm; }
 
   html, body {
-    margin: 0;
-    padding: 0;
-    background: #fff;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
-  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body { font-family: Arial, Helvetica, sans-serif; color:#000; }
 
-  /* ===== SCREEN PREVIEW ===== */
+  /* =========================
+     SCREEN PREVIEW
+     ========================= */
   .toolbar {
     position: fixed;
     top: 8px;
@@ -1358,18 +1364,33 @@ function openPrintView() {
     cursor: pointer;
     font-weight: 700;
   }
-  .screen { padding: 0; }
 
-  /* ===== PAGE CANVAS ===== */
-  .page {
-    width: 297mm;
-    height: 210mm;
-    box-sizing: border-box;
-    padding: 8mm;
-    overflow: hidden;
+  .screen {
+    display: flex;
+    justify-content: center;
+    padding: 14px;
+    background: #eee;
   }
 
-  /* ===== HEADER ===== */
+  /* =========================
+     PAGE CANVAS
+     NOTA: stampiamo dentro l’area A4 *meno* margini (@page margin 6mm):
+           297-12 = 285mm
+           210-12 = 198mm
+     ========================= */
+  .page {
+    width: 285mm;
+    height: 198mm;
+    box-sizing: border-box;
+    padding: 8mm;
+    background: #fff;
+    overflow: hidden;        /* no pagina 2 */
+    position: relative;
+  }
+
+  /* =========================
+     HEADER
+     ========================= */
   .headerTable { width:100%; border-collapse:collapse; table-layout:fixed; }
   .headerTable td { border:1.4px solid #000; padding:4px 6px; vertical-align:middle; }
 
@@ -1379,7 +1400,7 @@ function openPrintView() {
 
   .logoCell img { width:100%; height:22mm; object-fit:contain; }
   .titleCell { text-align:center; }
-  .titleCell .t1 { font-size:18px; font-weight:900; }
+  .titleCell .t1 { font-size:17px; font-weight:900; } /* leggermente ridotto per sicurezza 1 pagina */
   .metaCell { font-size:10.5px; line-height:1.15; }
 
   .intro { margin:4px 0 8px; font-size:11px; line-height:1.2; }
@@ -1427,7 +1448,9 @@ function openPrintView() {
   table.grid th { background:#f2f2f2; font-weight:900; padding:5px 6px; font-size:13px; }
   table.grid td { padding:5px 6px; font-size:12px; text-align:center; }
 
-  .row { height:12mm; }
+  /* Altezza riga: leggermente più bassa per garantire 1 pagina */
+  .row { height:11mm; }
+
   .cell { overflow:hidden; word-break:break-word; white-space:normal; }
   .task { width:35%; font-weight:700; text-align:left; }
   .comment { width:52%; text-align:left; }
@@ -1444,29 +1467,17 @@ function openPrintView() {
     font-weight: 800;
   }
 
-  /* ===== PRINT: iPad Safari anti-spill =====
-     Scala SOLO .page (non body) per evitare pagina 2.
-  */
+  /* =========================
+     PRINT RULES (NO SCALE!)
+     ========================= */
   @media print {
-    .toolbar { display:none !important; }
-    .screen { padding:0 !important; }
+    .toolbar, .screen { display: none !important; }
 
-    html, body {
-      margin: 0 !important;
-      padding: 0 !important;
-      overflow: hidden !important;
-      background: #fff !important;
-    }
+    /* in stampa il body contiene solo .page */
+    body { background: #fff !important; }
 
-    .page {
-      width: 297mm !important;
-      height: 210mm !important;
-      overflow: hidden !important;
-      transform-origin: top left !important;
-      transform: scale(0.96) !important;
-    }
-
-    table, tr, td, th, .twoCols, .tables, .page {
+    /* evita spezzamenti */
+    .page, table, tr, td, th, .twoCols, .tables {
       break-inside: avoid !important;
       page-break-inside: avoid !important;
     }
