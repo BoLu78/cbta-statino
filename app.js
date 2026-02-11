@@ -7,7 +7,7 @@
    ✅ UI/CRUD/Settings: same behavior as stable version
    ========================================================= */
 
-const BUILD_ID = "12feb26-v8.1";
+const BUILD_ID = "12feb26-v8.2";
 function getAppVersionLabel() {
   return "v" + BUILD_ID;
 }
@@ -19,7 +19,7 @@ function injectAppVersion(){
   el.style.display = "";
   el.textContent = versionLabel;
 }
-console.log("APP.JS VERSIONE: 11feb26");
+console.log("APP.JS VERSIONE:", "v12feb26-8.2");
 
 
 /* =========================================================
@@ -1754,6 +1754,31 @@ function openPrintView() {
       const viewportTag = '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />';
       const baseTag = `<base href="${escapeHtml(document.baseURI || window.location.href)}" />`;
       finalHtml = finalHtml.replace(viewportTag, `${viewportTag}\n${baseTag}`);
+      finalHtml = finalHtml.replace("@page { size: A4 landscape; margin: 0; }", "@page { margin: 0; }");
+      finalHtml = finalHtml.replace(
+        "</style>",
+        `
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100vh;
+    height: 100vw;
+    overflow: hidden;
+  }
+
+  .print-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    transform: rotate(90deg) translateY(-100%);
+    transform-origin: top left;
+  }
+</style>`
+      );
+      finalHtml = finalHtml.replace("<body>", "<body>\n<div class=\"print-wrapper\">");
+      finalHtml = finalHtml.replace("\n<script>", "\n</div>\n<script>");
       finalHtml = finalHtml.replace("triggerPrint();", "/* iPad print is triggered by parent after hardening waits */");
     }
 
