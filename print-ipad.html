@@ -229,6 +229,10 @@
 
   @media print {
     @supports (-webkit-touch-callout: none) {
+    /* iPad print: auto zoom equivalente a 79% */
+    html.iosPrintZoom79 .sheet{
+      zoom: 79%;
+    }
 
     /* iPad landscape: one-page hard fit (no scale/transform) */
     html.iosPrintLandscape{
@@ -286,7 +290,7 @@
 (function () {
   "use strict";
 
-  const PRINT_IPAD_VERSION = "v12feb26-8.11.8";
+  const PRINT_IPAD_VERSION = "v12feb26-8.11.10";
   console.log("PRINT-IPAD VERSIONE:", PRINT_IPAD_VERSION);
 
   const STORAGE_KEY = "CBTA_PRINT_PAYLOAD_V1";
@@ -572,6 +576,14 @@
     document.documentElement.classList.toggle("iosPrintLandscape", !!isLandscape);
   }
 
+  function setIpadAutoZoomClassForPrint() {
+    const ua = String(navigator.userAgent || "");
+    const isiOSLike =
+      /iPad|iPhone|iPod/i.test(ua) ||
+      (navigator.platform === "MacIntel" && Number(navigator.maxTouchPoints || 0) > 1);
+    document.documentElement.classList.toggle("iosPrintZoom79", !!isiOSLike);
+  }
+
   function appendIntegratedLandscapeFooterIfNeeded() {
     const existing = document.querySelector("tr.integratedFooterRow");
     if (existing) existing.remove();
@@ -594,9 +606,11 @@
 
   requestAnimationFrame(() => setTimeout(() => {
     try {
+      setIpadAutoZoomClassForPrint();
       setLandscapeClassForPrint();
       // micro delay per far applicare il CSS prima di aprire la preview
       setTimeout(() => {
+        setIpadAutoZoomClassForPrint();
         setLandscapeClassForPrint();
         appendIntegratedLandscapeFooterIfNeeded();
         window.print();
