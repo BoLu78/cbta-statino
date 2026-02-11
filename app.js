@@ -7,7 +7,7 @@
    ✅ UI/CRUD/Settings: same behavior as stable version
    ========================================================= */
 
-const BUILD_ID = "12feb26-v8.2";
+const BUILD_ID = "12feb26-8.3";
 function getAppVersionLabel() {
   return "v" + BUILD_ID;
 }
@@ -19,7 +19,7 @@ function injectAppVersion(){
   el.style.display = "";
   el.textContent = versionLabel;
 }
-console.log("APP.JS VERSIONE:", "v12feb26-8.2");
+console.log("APP.JS VERSIONE:", "v12feb26-8.3");
 
 
 /* =========================================================
@@ -1306,24 +1306,35 @@ function openPrintView() {
     return isIOS && isSafari;
   }
 
-  // NO POPUP: Safari-safe printing via hidden iframe
+  const useIpadHardening = isIpadSafari();
+
+  // NO POPUP: use hidden iframe; iPad uses offscreen blob pipeline
   const old = document.getElementById("cbtaPrintFrame");
   if (old) old.remove();
 
   const frame = document.createElement("iframe");
   frame.id = "cbtaPrintFrame";
-  frame.style.position = "fixed";
-  frame.style.left = "0";
-  frame.style.top = "0";
-  frame.style.width = "1px";
-  frame.style.height = "1px";
-  frame.style.opacity = "0";
-  frame.style.pointerEvents = "none";
-  frame.style.border = "0";
-  frame.style.zIndex = "2147483647";
+  if (useIpadHardening) {
+    frame.style.position = "fixed";
+    frame.style.left = "-10000px";
+    frame.style.top = "0";
+    frame.style.width = "1000px";
+    frame.style.height = "1000px";
+    frame.style.visibility = "hidden";
+    frame.style.border = "0";
+    frame.style.zIndex = "2147483647";
+  } else {
+    frame.style.position = "fixed";
+    frame.style.left = "0";
+    frame.style.top = "0";
+    frame.style.width = "1px";
+    frame.style.height = "1px";
+    frame.style.opacity = "0";
+    frame.style.pointerEvents = "none";
+    frame.style.border = "0";
+    frame.style.zIndex = "2147483647";
+  }
   document.body.appendChild(frame);
-
-  const useIpadHardening = isIpadSafari();
 
   const cleanup = () => {
     const f = document.getElementById("cbtaPrintFrame");
@@ -1749,69 +1760,58 @@ function openPrintView() {
 </body>
 </html>`;
 
-    let finalHtml = html;
     if (useIpadHardening) {
-      const viewportTag = '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />';
-      const baseTag = `<base href="${escapeHtml(document.baseURI || window.location.href)}" />`;
-      finalHtml = finalHtml.replace(viewportTag, `${viewportTag}\n${baseTag}`);
-      finalHtml = finalHtml.replace("@page { size: A4 landscape; margin: 0; }", "@page { margin: 0; }");
-      finalHtml = finalHtml.replace(
-        "</style>",
-        `
-  html, body {
-    margin: 0;
-    padding: 0;
-    width: 100vh;
-    height: 100vw;
-    overflow: hidden;
-  }
+      const htmlForIos = html.replace("triggerPrint();", "/* iPad print is triggered by parent after hardening waits */");
+      const blob = new Blob([htmlForIos], { type: "text/html" });
+      const url = URL.createObjectURL(blob);
 
-  .print-wrapper {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    transform: rotate(90deg) translateY(-100%);
-    transform-origin: top left;
-  }
-</style>`
-      );
-      finalHtml = finalHtml.replace("<body>", "<body>\n<div class=\"print-wrapper\">");
-      finalHtml = finalHtml.replace("\n<script>", "\n</div>\n<script>");
-      finalHtml = finalHtml.replace("triggerPrint();", "/* iPad print is triggered by parent after hardening waits */");
+      // expose cleanup to iframe content if needed
+      window.__CBTA_CLEANUP__ = () => { try { cleanup(); } catch(e){} };
+
+      frame.onload = async () => {
+        try {
+          const win = frame.contentWindow;
+          const d = frame.contentDocument || (win && win.document);
+
+          await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+          if (d && d.fonts && d.fonts.ready) {
+            try { await d.fonts.ready; } catch {}
+          }
+
+          const imgs = Array.from((d && d.images) || []);
+          await Promise.all(
+            imgs.map((img) => new Promise((resolve) => {
+              if (img.complete) return resolve();
+              img.addEventListener("load", () => resolve(), { once: true });
+              img.addEventListener("error", () => resolve(), { once: true });
+            }))
+          );
+
+          if (win) {
+            try { win.focus(); } catch {}
+            setTimeout(() => {
+              try { win.print(); } catch {}
+            }, 200);
+          }
+        } finally {
+          setTimeout(() => {
+            try { URL.revokeObjectURL(url); } catch {}
+            cleanup();
+          }, 2500);
+        }
+      };
+
+      frame.src = url;
+      return;
     }
 
-    // expose cleanup to iframe
+    // baseline path (Mac/desktop) untouched
     window.__CBTA_CLEANUP__ = () => { try { cleanup(); } catch(e){} };
-
     const doc = frame.contentDocument || frame.contentWindow.document;
     doc.open();
-    doc.write(finalHtml);
+    doc.write(html);
     doc.close();
-
-    if (useIpadHardening) {
-      const win = frame.contentWindow;
-      const fdoc = frame.contentDocument || (win && win.document);
-      if (fdoc) {
-        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-        if (fdoc.fonts && fdoc.fonts.ready) {
-          try { await fdoc.fonts.ready; } catch {}
-        }
-        const imgs = Array.from(fdoc.images || []);
-        await Promise.all(
-          imgs.map((img) => new Promise((resolve) => {
-            if (img.complete) return resolve();
-            img.addEventListener("load", () => resolve(), { once: true });
-            img.addEventListener("error", () => resolve(), { once: true });
-          }))
-        );
-      }
-      if (win) {
-        try { win.focus(); } catch {}
-        try { win.print(); } catch {}
-      }
-    }
   })().catch((e) => {
     cleanup();
     alert("Print view failed.");
