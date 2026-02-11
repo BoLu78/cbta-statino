@@ -286,7 +286,7 @@
 (function () {
   "use strict";
 
-  const PRINT_IPAD_VERSION = "v12feb26-8.11.8";
+  const PRINT_IPAD_VERSION = "v12feb26-8.11.9";
   console.log("PRINT-IPAD VERSIONE:", PRINT_IPAD_VERSION);
 
   const STORAGE_KEY = "CBTA_PRINT_PAYLOAD_V1";
@@ -560,16 +560,12 @@
   root.innerHTML = html;
 
   function setLandscapeClassForPrint() {
-    const byMedia = !!(window.matchMedia && window.matchMedia("(orientation: landscape)").matches);
-    const byViewport = (window.innerWidth > window.innerHeight);
-    const byVisualViewport = !!(window.visualViewport && window.visualViewport.width > window.visualViewport.height);
-    const byScreen = !!(
-      window.screen &&
-      window.screen.orientation &&
-      /landscape/i.test(String(window.screen.orientation.type || ""))
-    );
-    const isLandscape = byMedia || byViewport || byVisualViewport || byScreen;
-    document.documentElement.classList.toggle("iosPrintLandscape", !!isLandscape);
+    const ua = String(navigator.userAgent || "");
+    const isiOSLike =
+      /iPad|iPhone|iPod/i.test(ua) ||
+      (navigator.platform === "MacIntel" && Number(navigator.maxTouchPoints || 0) > 1);
+    // print template is A4 landscape by design: on iPad force the landscape hardening class deterministically.
+    document.documentElement.classList.toggle("iosPrintLandscape", !!isiOSLike);
   }
 
   function appendIntegratedLandscapeFooterIfNeeded() {
