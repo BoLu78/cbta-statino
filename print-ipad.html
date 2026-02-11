@@ -313,7 +313,7 @@
 (function () {
   "use strict";
 
-  const PRINT_IPAD_VERSION = "v12feb26-8.11.16";
+  const PRINT_IPAD_VERSION = "v12feb26-8.11.17";
   console.log("PRINT-IPAD VERSIONE:", PRINT_IPAD_VERSION);
 
   const STORAGE_KEY = "CBTA_PRINT_PAYLOAD_V1";
@@ -358,6 +358,14 @@
     if (bar) bar.style.display = "block";
   }
 
+  function redirectToAppHome() {
+    try {
+      window.location.replace("index.html");
+    } catch (_) {
+      window.location.href = "index.html";
+    }
+  }
+
   function showNoData() {
     const root = document.getElementById("printApp");
     if (!root) return;
@@ -380,7 +388,9 @@
   }
 
   if (!payload || typeof payload !== "object") {
-    showNoData();
+    // If print page is opened directly (or by Safari restore), go back to app home.
+    redirectToAppHome();
+    setTimeout(showNoData, 700);
     return;
   }
 

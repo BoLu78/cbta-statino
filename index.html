@@ -8,6 +8,7 @@
 
   <!-- CSS -->
   <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png" />
   <link rel="apple-touch-icon" sizes="152x152" href="./icon-152.png" />
   <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
   <link rel="stylesheet" href="./styles.css" />
@@ -165,7 +166,7 @@
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      const SW_VERSION = 'v12feb26-8.11.16';
+      const SW_VERSION = 'v12feb26-8.11.17';
       let refreshing = false;
 
       navigator.serviceWorker.addEventListener('controllerchange', () => {
