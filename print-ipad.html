@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>CBTA Statino - iPad Print</title>
+<style>
+  :root{
+    --paper-w: 297mm;
+    --paper-h: 210mm;
+    --safe-x: 6mm;
+    --safe-y: 6mm;
+    --ink:#000;
+    --grid:#000;
+    --bar:#d9d9d9;
+    --h-header: 22mm;
+    --h-intro: 7.5mm;
+    --h-bar: 5mm;
+    --h-info: 6.5mm;
+    --h-guidance: 17.5mm;
+    --h-tables: 114mm;
+    --h-assessbar: 5mm;
+    --h-assessbox: 9mm;
+    --left-w: 176mm;
+    --div-w: 6mm;
+    --right-w: 102mm;
+    --logo-h: 20mm;
+    --row-head-h: 8mm;
+    --row-body-h: 10mm;
+  }
+
+  @page { size: A4 landscape; margin: 0; }
+
+  html, body { margin:0; padding:0; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-family: Arial, Helvetica, sans-serif; color: var(--ink); background:#fff; }
+
+  .sheet{ width: var(--paper-w); height: var(--paper-h); margin: 0; background:#fff; }
+  .page{
+    width: var(--paper-w);
+    height: var(--paper-h);
+    box-sizing:border-box;
+    padding: var(--safe-y) var(--safe-x);
+    background:#fff;
+  }
+
+  table.layout{
+    width: calc(var(--paper-w) - (var(--safe-x) * 2));
+    height: calc(var(--paper-h) - (var(--safe-y) * 2));
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+  }
+  table.layout > tbody > tr > td{ padding:0; vertical-align:top; }
+
+  table.headerTable{ width:100%; height:100%; border-collapse:collapse; table-layout:fixed; }
+  table.headerTable td{ border:0.3mm solid var(--grid); padding:0.6mm 1.2mm; vertical-align:middle; }
+  .logoCell{
+    width:66mm;
+    text-align:center;
+    padding:0 !important;
+    vertical-align:middle;
+  }
+  .logoCell img{
+    height:27mm;
+    width:auto;
+    max-width:100%;
+    object-fit:contain;
+    display:block;
+    margin:0 auto;
+  }
+  .titleCell{ text-align:center; }
+  .titleCell .t1{ font-size:3.7mm; font-weight:900; line-height:1.02; letter-spacing:0.05mm; }
+  .metaCell{ width:69mm; font-size:2.45mm; line-height:1.08; }
+
+  .intro{ font-size:2.45mm; line-height:1.08; padding:0.2mm 0; }
+
+  .bar{
+    border:0.3mm solid var(--grid);
+    background:var(--bar);
+    font-weight:900;
+    font-size:2.8mm;
+    line-height:4.6mm;
+    padding:0 1.6mm;
+    box-sizing:border-box;
+  }
+
+  table.infoTable{ width:100%; height:100%; border-collapse:collapse; table-layout:fixed; }
+  table.infoTable td{ border:0.3mm solid var(--grid); padding:0.55mm 1.2mm; font-size:2.45mm; line-height:1.05; }
+  .label{ font-weight:800; }
+  .valueDate{ white-space:nowrap; font-size:2.35mm; }
+
+  table.guidance{ width: calc(var(--left-w) + var(--div-w) + var(--right-w)); height:100%; border-collapse:collapse; table-layout:fixed; margin:0 auto; }
+  table.guidance td{ padding:0; vertical-align:top; }
+  .midSep{ width:var(--div-w); background:#e6e6e6; border:0.3mm solid var(--grid); }
+  .boxTitle{
+    border:0.3mm solid var(--grid);
+    background:var(--bar);
+    font-weight:900;
+    font-size:2.65mm;
+    line-height:4mm;
+    padding:0 1.5mm;
+    box-sizing:border-box;
+  }
+  .boxBody{
+    border-left:0.3mm solid var(--grid);
+    border-right:0.3mm solid var(--grid);
+    border-bottom:0.3mm solid var(--grid);
+    padding:0.8mm 1.5mm;
+    font-size:2.3mm;
+    line-height:1.14;
+    box-sizing:border-box;
+    height: calc(100% - 4.2mm);
+  }
+  .bullets{ margin:0; padding:0; list-style:none; }
+  .bullets li{ display:block; margin:0.3mm 0; }
+  .bullets .arrow{ font-weight:900; font-size:2.9mm; display:inline-block; width:5mm; }
+
+  table.twotables{ width: calc(var(--left-w) + var(--div-w) + var(--right-w)); height:100%; border-collapse:collapse; table-layout:fixed; margin:0 auto; }
+  table.twotables td{ padding:0; vertical-align:top; }
+  .divider{
+    width:var(--div-w);
+    background:#e6e6e6;
+    border:0.3mm solid var(--grid);
+    text-align:center;
+    vertical-align:middle !important;
+  }
+  .divider svg{ width:5mm; height:20mm; }
+
+  table.grid{ width:100%; height:100%; border-collapse:collapse; table-layout:fixed; }
+  table.grid th, table.grid td{ border:0.3mm solid var(--grid); vertical-align:middle; }
+
+  table.grid thead th{
+    background:#f2f2f2;
+    font-weight:900;
+    height:var(--row-head-h);
+    padding:0.6mm 0.9mm;
+    font-size:2.45mm;
+    line-height:1.02;
+    box-sizing:border-box;
+  }
+  table.grid tbody td{
+    height:var(--row-body-h);
+    padding:0.45mm 0.8mm;
+    font-size:2.3mm;
+    line-height:1.03;
+    box-sizing:border-box;
+    text-align:center;
+  }
+
+  .cell{ white-space: normal; overflow-wrap: break-word; word-break: break-word; hyphens: none; }
+  .task{ width:35%; font-weight:700; text-align:left; }
+  .comment{ width:52%; text-align:left; }
+  .tem{ width:13%; }
+  .mark{ font-weight:900; }
+  .obcell{ font-size:2.25mm; line-height:1.02; }
+
+  .clip{ display:block; overflow:hidden; width:100%; }
+  .clip-task, .clip-comment, .clip-tem{ line-height:1.08; height:5.3mm; overflow:hidden; }
+  .clip-ob{ line-height:1.02; height:2.7mm; overflow:hidden; }
+
+  .assessBar{
+    border:0.3mm solid var(--grid);
+    background:var(--bar);
+    font-weight:900;
+    font-size:2.65mm;
+    line-height:4.6mm;
+    padding:0 1.6mm;
+    box-sizing:border-box;
+  }
+  .assessBox{
+    border:0.3mm solid var(--grid);
+    padding:1.0mm 1.6mm;
+    box-sizing:border-box;
+    color:#c40000;
+    font-size:2.15mm;
+    font-weight:800;
+    line-height:1.12;
+    overflow:hidden;
+  }
+
+  *{ break-inside: avoid; page-break-inside: avoid; }
+  tr{ break-inside: avoid; page-break-inside: avoid; }
+</style>
+<style>
+  #postPrintBar{
+    display:none;
+    position:sticky;
+    top:0;
+    z-index:9999;
+    background:#fff;
+    border-bottom:1px solid #d0d0d0;
+    padding:10px;
+  }
+  #postPrintBar button{
+    border:1px solid #333;
+    background:#f7f7f7;
+    color:#111;
+    padding:8px 12px;
+    border-radius:6px;
+    font:600 14px Arial, Helvetica, sans-serif;
+  }
+  #noDataWrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    min-height:100vh;
+    gap:12px;
+    font:600 16px Arial, Helvetica, sans-serif;
+  }
+  @media print {
+    #postPrintBar,
+    #noDataWrap{ display:none !important; }
+  }
+</style>
+</head>
+<body>
+<div id="postPrintBar"><button id="backToAppBtn" type="button">Back to App</button></div>
+<div id="printApp"></div>
+<script>
+(function () {
+  "use strict";
+
+  console.log("PRINT-IPAD VERSIONE:", "v12feb26-8.7");
+
+  const STORAGE_KEY = "CBTA_PRINT_PAYLOAD_V1";
+  const DEFAULT_OB_COLS_ORDER = ["PRO", "COM", "FPM", "FPA", "LTW", "PSD", "SAW", "WLM", "KNO"];
+
+  function escapeHtml(v) {
+    return String(v ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+  }
+
+  function ensureArray(v) {
+    if (Array.isArray(v)) return v;
+    if (v == null || v === "") return [];
+    return [v];
+  }
+
+  function safeStr(v) {
+    return v == null ? "" : String(v);
+  }
+
+  function taskForPrint(v) {
+    return safeStr(v).trim();
+  }
+
+  function goBackToApp() {
+    try {
+      if (window.history.length > 1) {
+        window.history.back();
+        setTimeout(() => { window.location.href = "index.html"; }, 250);
+        return;
+      }
+    } catch (_) {}
+    window.location.href = "index.html";
+  }
+
+  function showBackBar() {
+    const bar = document.getElementById("postPrintBar");
+    if (bar) bar.style.display = "block";
+  }
+
+  function showNoData() {
+    const root = document.getElementById("printApp");
+    if (!root) return;
+    root.innerHTML = '<div id="noDataWrap"><div>No print data</div><button id="fallbackBackBtn" type="button">Back to App</button></div>';
+    const btn = document.getElementById("fallbackBackBtn");
+    if (btn) btn.addEventListener("click", goBackToApp);
+    showBackBar();
+  }
+
+  const backBtn = document.getElementById("backToAppBtn");
+  if (backBtn) backBtn.addEventListener("click", goBackToApp);
+
+  let payload = null;
+  try {
+    payload = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+  } catch (_) {
+    payload = null;
+  }
+
+  if (!payload || typeof payload !== "object") {
+    showNoData();
+    return;
+  }
+
+  const info = payload.info && typeof payload.info === "object" ? payload.info : {};
+  const rows = Array.isArray(payload.rows) ? payload.rows : [];
+  const brand = payload.brand && typeof payload.brand === "object" ? payload.brand : {};
+  const obColsOrder = Array.isArray(payload.obColsOrder) && payload.obColsOrder.length
+    ? payload.obColsOrder.map((c) => safeStr(c))
+    : DEFAULT_OB_COLS_ORDER;
+
+  const formattedDate = safeStr(payload.formattedDate);
+  const appVersion = safeStr(payload.appVersion);
+  const logoSrc = safeStr(brand.logoFile || "logo.png");
+
+  const obColWidthMm = (102 / obColsOrder.length).toFixed(3);
+  const obColGroup = obColsOrder.map(() => '<col style="width:' + obColWidthMm + 'mm">').join("");
+
+  const obTableBody = rows.map((r) => {
+    const cells = obColsOrder.map((code) => {
+      const arr = ensureArray(r && r.competencies && r.competencies[code]);
+      const txt = arr.length ? arr.join(",") : "";
+      return '<td class="cell obcell"><div class="clip clip-ob">' + escapeHtml(txt) + "</div></td>";
+    }).join("");
+    return '<tr class="row">' + cells + "</tr>";
+  }).join("");
+
+  const obsTableBody = rows.map((r) => {
+    const task = taskForPrint(r && r.task);
+    const comment = safeStr(r && r.comment);
+    const tem = safeStr(r && r.tem);
+    const cp = safeStr(r && r.cp);
+    const fo = safeStr(r && r.fo);
+    return [
+      '<tr class="row">',
+      '<td class="cell task"><div class="clip clip-task">' + escapeHtml(task) + "</div></td>",
+      '<td class="cell comment"><div class="clip clip-comment">' + escapeHtml(comment) + "</div></td>",
+      '<td class="cell tem"><div class="clip clip-tem">' + escapeHtml(tem) + "</div></td>",
+      '<td class="cell mark">' + escapeHtml(cp) + "</td>",
+      '<td class="cell mark">' + escapeHtml(fo) + "</td>",
+      "</tr>"
+    ].join("");
+  }).join("");
+
+  const dividerSvg = [
+    '<svg viewBox="0 0 20 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">',
+    '<path d="M18 40 L6 12 L6 28 L2 28 L2 52 L6 52 L6 68 Z" fill="#9a9a9a" stroke="#7a7a7a" stroke-width="1"/>',
+    "</svg>"
+  ].join("");
+
+  const observeGuidance = ensureArray(brand.observeGuidance).map((t) => (
+    '<li><span class="arrow">&#10148;</span>' + escapeHtml(t) + "</li>"
+  )).join("");
+
+  const rootCauseGuidance = ensureArray(brand.rootCauseGuidance).map((t) => (
+    '<li><span class="arrow">&#10148;</span>' + escapeHtml(t) + "</li>"
+  )).join("");
+
+  const introHtml = escapeHtml(safeStr(brand.introText))
+    .replaceAll("capturing the instructor observations", "<b>capturing the instructor observations</b>")
+    .replaceAll("root cause classification", "<b>root cause classification</b>");
+
+  const html = `
+<div class="sheet">
+  <div class="page">
+    <table class="layout">
+      <tbody>
+        <tr style="height: var(--h-header);">
+          <td>
+            <table class="headerTable">
+              <colgroup>
+                <col style="width:66mm">
+                <col style="width:146mm">
+                <col style="width:69mm">
+              </colgroup>
+              <tr>
+                <td class="logoCell"><img src="${escapeHtml(logoSrc)}" alt="NEOS" /></td>
+                <td class="titleCell"><div class="t1">${escapeHtml(safeStr(brand.title))}</div></td>
+                <td class="metaCell">
+                  <div>${escapeHtml(safeStr(brand.metaRight && brand.metaRight.sn))}</div>
+                  <div>${escapeHtml(safeStr(brand.metaRight && brand.metaRight.revision))}</div>
+                  <div>${escapeHtml(safeStr(brand.metaRight && brand.metaRight.date))}</div>
+                  <div>${escapeHtml(safeStr(brand.metaRight && brand.metaRight.edited))}</div>
+                  <div>App version: ${escapeHtml(appVersion)}</div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr style="height: var(--h-intro);">
+          <td>
+            <div class="intro">
+              ${introHtml}
+            </div>
+          </td>
+        </tr>
+
+        <tr style="height: var(--h-bar);">
+          <td><div class="bar">TRAINING INFORMATION</div></td>
+        </tr>
+
+        <tr style="height: var(--h-info);">
+          <td>
+            <table class="infoTable">
+              <colgroup>
+                <col style="width:28mm"><col style="width:56mm">
+                <col style="width:26mm"><col style="width:36mm">
+                <col style="width:20mm"><col style="width:46mm">
+                <col style="width:16mm"><col style="width:53mm">
+              </colgroup>
+              <tr>
+                <td class="label">Event name</td>
+                <td class="value">${escapeHtml(safeStr(info.eventName))}</td>
+                <td class="label">Name CPT</td>
+                <td class="value">${escapeHtml(safeStr(info.nameCpt))}</td>
+                <td class="label">Name FO</td>
+                <td class="value">${escapeHtml(safeStr(info.nameFo))}</td>
+                <td class="label">Date</td>
+                <td class="value valueDate">${escapeHtml(formattedDate)}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr style="height: var(--h-guidance);">
+          <td>
+            <table class="guidance">
+              <colgroup>
+                <col style="width: var(--left-w);">
+                <col style="width: var(--div-w);">
+                <col style="width: var(--right-w);">
+              </colgroup>
+              <tr>
+                <td>
+                  <div class="boxTitle">1. Observe</div>
+                  <div class="boxBody">
+                    <ul class="bullets">${observeGuidance}</ul>
+                  </div>
+                </td>
+                <td class="midSep"></td>
+                <td>
+                  <div class="boxTitle">2. Root Cause Classification</div>
+                  <div class="boxBody">
+                    <ul class="bullets">${rootCauseGuidance}</ul>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr style="height: var(--h-tables);">
+          <td>
+            <table class="twotables">
+              <colgroup>
+                <col style="width: var(--left-w);">
+                <col style="width: var(--div-w);">
+                <col style="width: var(--right-w);">
+              </colgroup>
+              <tr>
+                <td>
+                  <table class="grid" id="tblLeft">
+                    <colgroup>
+                      <col style="width:58mm"><col style="width:86mm"><col style="width:23mm"><col style="width:4.5mm"><col style="width:4.5mm">
+                    </colgroup>
+                    <thead>
+                      <tr><th>Task</th><th>Comments</th><th>TEM notes</th><th>CP</th><th>FO</th></tr>
+                    </thead>
+                    <tbody>${obsTableBody}</tbody>
+                  </table>
+                </td>
+
+                <td class="divider">${dividerSvg}</td>
+
+                <td>
+                  <table class="grid" id="tblRight">
+                    <colgroup>${obColGroup}</colgroup>
+                    <thead><tr>${obColsOrder.map((c) => `<th>${escapeHtml(c)}</th>`).join("")}</tr></thead>
+                    <tbody>${obTableBody}</tbody>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr style="height: var(--h-assessbar);">
+          <td><div class="assessBar">3. Assessment of Competencies</div></td>
+        </tr>
+
+        <tr style="height: var(--h-assessbox);">
+          <td><div class="assessBox">${escapeHtml(safeStr(brand.footerRed))}</div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>`;
+
+  const root = document.getElementById("printApp");
+  if (!root) {
+    showNoData();
+    return;
+  }
+  root.innerHTML = html;
+
+  requestAnimationFrame(() => setTimeout(() => {
+    try {
+      window.print();
+    } catch (_) {
+      showBackBar();
+    }
+  }, 0));
+
+  window.onafterprint = () => {
+    showBackBar();
+  };
+})();
+</script>
+</body>
+</html>

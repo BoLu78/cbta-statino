@@ -1,13 +1,13 @@
 /* =========================================================
    CBTA Statino — app.js (STABLE + PRINT + EDIT)
-   VERSION: 2026-02-08 20:10
+   VERSION: v12feb26-8.7
 
    ✅ PRINT FIX 1: Date cell never overflows (Safari iPad)
    ✅ PRINT FIX 2: Tables aligned: header + each row same height (Task table vs OB table)
    ✅ UI/CRUD/Settings: same behavior as stable version
    ========================================================= */
 
-const BUILD_ID = "12feb26-8.6";
+const BUILD_ID = "12feb26-8.7";
 function getAppVersionLabel() {
   return "v" + BUILD_ID;
 }
@@ -19,7 +19,7 @@ function injectAppVersion(){
   el.style.display = "";
   el.textContent = versionLabel;
 }
-console.log("APP.JS VERSIONE:", "v12feb26-8.6");
+console.log("APP.JS VERSIONE:", "v12feb26-8.7");
 
 
 /* =========================================================
@@ -1307,6 +1307,28 @@ function openPrintView() {
   }
 
   const useIpadHardening = isIpadSafari();
+  if (useIpadHardening) {
+    const info = currentTrainingInfo();
+    const rows = buildRowsForPrint();
+    const payload = {
+      info,
+      rows,
+      formattedDate: fmtDate(info.date),
+      appVersion: getAppVersionLabel(),
+      brand: BRAND,
+      obColsOrder: OB_COLS_ORDER
+    };
+
+    try {
+      localStorage.setItem("CBTA_PRINT_PAYLOAD_V1", JSON.stringify(payload));
+    } catch (_) {
+      alert("Unable to prepare iPad print data.");
+      return;
+    }
+
+    window.location.href = "print-ipad.html";
+    return;
+  }
 
   // NO POPUP: use hidden iframe; iPad uses offscreen blob pipeline
   const old = document.getElementById("cbtaPrintFrame");
