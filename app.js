@@ -7,7 +7,7 @@
    ✅ UI/CRUD/Settings: same behavior as stable version
    ========================================================= */
 
-const BUILD_ID = "12feb26-8.4";
+const BUILD_ID = "12feb26-8.6";
 function getAppVersionLabel() {
   return "v" + BUILD_ID;
 }
@@ -19,7 +19,7 @@ function injectAppVersion(){
   el.style.display = "";
   el.textContent = versionLabel;
 }
-console.log("APP.JS VERSIONE:", "v12feb26-8.4");
+console.log("APP.JS VERSIONE:", "v12feb26-8.6");
 
 
 /* =========================================================
@@ -1761,7 +1761,13 @@ function openPrintView() {
 </html>`;
 
     if (useIpadHardening) {
-      const htmlForIos = html.replace("triggerPrint();", "/* iPad print is triggered by parent after hardening waits */");
+      const htmlForIos = html
+        .replace("@page { size: A4 landscape; margin: 0; }", "")
+        .replace("--paper-w: 297mm;", "--paper-w: 1123px;")
+        .replace("--paper-h: 210mm;", "--paper-h: 794px;")
+        .replace("--safe-x: 6mm;", "--safe-x: 23px;")
+        .replace("--safe-y: 6mm;", "--safe-y: 23px;")
+        .replace("triggerPrint();", "/* iPad print is triggered by parent after hardening waits */");
       const blob = new Blob([htmlForIos], { type: "text/html" });
       const url = URL.createObjectURL(blob);
 
