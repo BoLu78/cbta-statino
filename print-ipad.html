@@ -232,16 +232,17 @@
 
     /* iPad landscape: one-page hard fit (no scale/transform) */
     html.iosPrintLandscape{
-      --safe-y: 3mm;
-      --h-intro: 6.2mm;
-      --h-guidance: 16.0mm;
-      --h-assessbar: 4.5mm;
-      --h-assessbox: 7.2mm;
+      --safe-y: 2.5mm;
+      --h-intro: 6.0mm;
+      --h-guidance: 15.5mm;
+      --h-tables: 110.0mm;
+      --h-assessbar: 4.2mm;
+      --h-assessbox: 6.8mm;
     }
 
     /* compact footer red box only for iPad landscape */
     html.iosPrintLandscape .assessBox{
-      padding: 0.4mm 1.2mm !important;
+      padding: 0.35mm 1.2mm !important;
       line-height: 1.0 !important;
     }
 
@@ -267,7 +268,7 @@
 (function () {
   "use strict";
 
-  const PRINT_IPAD_VERSION = "v12feb26-8.11.6";
+  const PRINT_IPAD_VERSION = "v12feb26-8.11.7";
   console.log("PRINT-IPAD VERSIONE:", PRINT_IPAD_VERSION);
 
   const STORAGE_KEY = "CBTA_PRINT_PAYLOAD_V1";
@@ -541,9 +542,15 @@
   root.innerHTML = html;
 
   function setLandscapeClassForPrint() {
-    const isLandscape =
-      (window.matchMedia && window.matchMedia("(orientation: landscape)").matches) ||
-      (window.innerWidth > window.innerHeight);
+    const byMedia = !!(window.matchMedia && window.matchMedia("(orientation: landscape)").matches);
+    const byViewport = (window.innerWidth > window.innerHeight);
+    const byVisualViewport = !!(window.visualViewport && window.visualViewport.width > window.visualViewport.height);
+    const byScreen = !!(
+      window.screen &&
+      window.screen.orientation &&
+      /landscape/i.test(String(window.screen.orientation.type || ""))
+    );
+    const isLandscape = byMedia || byViewport || byVisualViewport || byScreen;
     document.documentElement.classList.toggle("iosPrintLandscape", !!isLandscape);
   }
 
@@ -551,7 +558,10 @@
     try {
       setLandscapeClassForPrint();
       // micro delay per far applicare il CSS prima di aprire la preview
-      setTimeout(() => { window.print(); }, 50);
+      setTimeout(() => {
+        setLandscapeClassForPrint();
+        window.print();
+      }, 80);
     } catch (_) {
       showBackBar();
     }
