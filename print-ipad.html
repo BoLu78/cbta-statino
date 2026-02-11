@@ -155,6 +155,20 @@
   .mark{ font-weight:900; }
   .obcell{ font-size:2.25mm; line-height:1.02; }
 
+  /* keep CP/FO readable in narrow columns without changing layout widths */
+  #tblLeft thead th:nth-child(4),
+  #tblLeft thead th:nth-child(5){
+    text-align:left;
+    padding-left:0.25mm;
+    padding-right:0.20mm;
+  }
+  #tblLeft tbody td:nth-child(4),
+  #tblLeft tbody td:nth-child(5){
+    text-align:left;
+    padding-left:0.25mm;
+    padding-right:0.20mm;
+  }
+
   .clip{ display:block; overflow:hidden; width:100%; }
   .clip-task, .clip-comment, .clip-tem{ line-height:1.08; height:5.3mm; overflow:hidden; }
   .clip-ob{ line-height:1.02; height:2.7mm; overflow:hidden; }
@@ -233,6 +247,9 @@
     html.iosPrintZoom79 #printApp{
       width: 100%;
       text-align: center;
+      font-size: 0;
+      line-height: 0;
+      overflow: hidden;
     }
     html.iosPrintZoom79 .sheet{
       display: inline-block;
@@ -296,7 +313,7 @@
 (function () {
   "use strict";
 
-  const PRINT_IPAD_VERSION = "v12feb26-8.11.11";
+  const PRINT_IPAD_VERSION = "v12feb26-8.11.13";
   console.log("PRINT-IPAD VERSIONE:", PRINT_IPAD_VERSION);
 
   const STORAGE_KEY = "CBTA_PRINT_PAYLOAD_V1";
