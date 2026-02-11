@@ -7,7 +7,7 @@
    ✅ UI/CRUD/Settings: same behavior as stable version
    ========================================================= */
 
-const BUILD_ID = "-v12feb26-7";
+const BUILD_ID = "11feb26-7.1";
 function getAppVersionLabel() {
   return "v" + BUILD_ID;
 }
@@ -1342,24 +1342,25 @@ function openPrintView() {
     --safe-margin-y: 6mm;
     --content-w: calc(var(--paper-w) - (var(--safe-margin-x) * 2));
     --content-h: calc(var(--paper-h) - (var(--safe-margin-y) * 2));
-    --gap-v: 0.7mm;
+    --gap-v: 0.6mm;
     --gap-h: 2.6mm;
 
     /* altezze deterministiche con margine di sicurezza per rounding Safari */
     --h-header: 22mm;
-    --h-intro: 8mm;
+    --h-intro: 7.5mm;
     --h-bar: 5mm;
-    --h-info: 7mm;
-    --h-guidance: 18mm;
-    --h-tables: 118mm;     /* 11 righe * 10mm + header 8mm ≈ dentro 118mm */
+    --h-info: 6.5mm;
+    --h-guidance: 17.5mm;
+    --h-tables: 114mm;     /* 11 righe * 10mm + header 8mm ≈ dentro 118mm */
     --h-assessbar: 5mm;
-    --h-assessbox: 10mm;
+    --h-assessbox: 9mm;
 
     --logo-h: 20mm;
     /* come template: tabella sinistra + barra grigia + tabella destra */
     --left-table-w: 176mm;
     --divider-w: 6mm;
     --right-table-w: 102mm;
+    --split-w: calc(var(--left-table-w) + var(--divider-w) + var(--right-table-w));
 
     --row-head-h: 8mm;
     --row-body-h: 10mm;
@@ -1369,7 +1370,7 @@ function openPrintView() {
     --bar:#d9d9d9;
   }
 
-  @page { size: A4 landscape; margin: 0mm; }
+  @page { size: A4 landscape; size: 297mm 210mm; margin: 0mm; }
 
   html, body { margin:0; padding:0; }
   html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -1471,9 +1472,10 @@ function openPrintView() {
 
   .twoCols{
     display:grid;
-    grid-template-columns: 200mm 4mm 1fr; /* come template: box grande + separatore grigio + box piccolo */
-    column-gap: var(--gap-h);
-    width:100%;
+    grid-template-columns: var(--left-table-w) var(--divider-w) var(--right-table-w);
+    column-gap: 0mm;
+    width:var(--split-w);
+    margin:0 auto;
     height:100%;
   }
   .midSep{
@@ -1507,7 +1509,8 @@ function openPrintView() {
     display:grid;
     grid-template-columns: var(--left-table-w) var(--divider-w) var(--right-table-w);
     column-gap: 0mm; /* nel template non è un gap bianco: è una barra */
-    width:100%;
+    width:var(--split-w);
+    margin:0 auto;
     height:100%;
   }
   .tables > div { width:100%; height:100%; }
@@ -1520,7 +1523,7 @@ function openPrintView() {
     align-items:center;
     justify-content:center;
   }
-  .divider svg{ width:5mm; height:20mm; }
+  .divider svg{ width:5mm; height:20mm; transform:scaleX(-1); transform-origin:50% 50%; }
 
   table.grid { width:100%; height:100%; border-collapse:collapse; table-layout:fixed; }
   table.grid th, table.grid td { border:0.3mm solid var(--grid); vertical-align:middle; }
@@ -1590,7 +1593,7 @@ function openPrintView() {
   }
 
   @media print{
-    @page { size: A4 landscape; margin: 0mm; }
+    @page { size: A4 landscape; size: 297mm 210mm; margin: 0mm; }
     html, body{
       width:297mm;
       height:210mm;
