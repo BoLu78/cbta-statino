@@ -217,28 +217,30 @@
   @media print {
     @supports (-webkit-touch-callout: none) {
 
-      /* iPad landscape: recupera spazio in modo deterministico (NO SCALE) */
-      html.iosPrintLandscape :root {
-        --safe-y: 4mm;        /* recupera 2mm sopra/sotto */
-        --h-tables: 109mm;    /* era 114: recupera 4mm dove pesa di più */
-      }
+    /* iPad landscape: recupera mm con micro-tweaks su altezze rigide */
+    html.iosPrintLandscape :root{
+      --safe-y: 4mm;        /* già ok */
+      --h-intro: 7.0mm;     /* era 7.5 */
+      --h-guidance: 17.0mm; /* era 17.5 */
+      --h-assessbox: 8.3mm; /* era 9.0 */
+    }
 
-      /* compattazione minima SOLO del footer rosso (invisibile a occhio) */
-      html.iosPrintLandscape .assessBox{
-        padding: 0.6mm 1.4mm !important;
-        line-height: 1.06 !important;
-      }
+    /* compatta solo il footer rosso (minimo) */
+    html.iosPrintLandscape .assessBox{
+      padding: 0.6mm 1.4mm !important;
+      line-height: 1.06 !important;
+    }
 
-      /* Safari iOS: break-inside va applicato ai wrapper, non ai tr */
-      html.iosPrintLandscape table.layout,
-      html.iosPrintLandscape table.layout > tbody,
-      html.iosPrintLandscape table.layout > tbody > tr,
-      html.iosPrintLandscape table.twotables,
-      html.iosPrintLandscape table.twotables > tbody,
-      html.iosPrintLandscape table.twotables > tbody > tr{
-        break-inside: avoid !important;
-        page-break-inside: avoid !important;
-      }
+    /* break-inside più affidabile su wrapper */
+    html.iosPrintLandscape table.layout,
+    html.iosPrintLandscape table.layout > tbody,
+    html.iosPrintLandscape table.layout > tbody > tr,
+    html.iosPrintLandscape table.twotables,
+    html.iosPrintLandscape table.twotables > tbody,
+    html.iosPrintLandscape table.twotables > tbody > tr{
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
     }
   }
 </style>
@@ -250,7 +252,7 @@
 (function () {
   "use strict";
 
-  console.log("PRINT-IPAD VERSIONE:", "v12feb26-8.11.2");
+  console.log("PRINT-IPAD VERSIONE:", "v12feb26-8.11.3");
 
   const STORAGE_KEY = "CBTA_PRINT_PAYLOAD_V1";
   const DEFAULT_OB_COLS_ORDER = ["PRO", "COM", "FPM", "FPA", "LTW", "PSD", "SAW", "WLM", "KNO"];

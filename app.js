@@ -1,13 +1,13 @@
 /* =========================================================
    CBTA Statino — app.js (STABLE + PRINT + EDIT)
-   VERSION: v12feb26-8.11.2
+   VERSION: v12feb26-8.11.3
 
    ✅ PRINT FIX 1: Date cell never overflows (Safari iPad)
    ✅ PRINT FIX 2: Tables aligned: header + each row same height (Task table vs OB table)
    ✅ UI/CRUD/Settings: same behavior as stable version
    ========================================================= */
 
-const BUILD_ID = "12feb26-8.11.2";
+const BUILD_ID = "12feb26-8.11.3";
 function getAppVersionLabel() {
   return "v" + BUILD_ID;
 }
@@ -19,7 +19,7 @@ function injectAppVersion(){
   el.style.display = "";
   el.textContent = versionLabel;
 }
-console.log("APP.JS VERSIONE:", "v12feb26-8.11.2");
+console.log("APP.JS VERSIONE:", "v12feb26-8.11.3");
 
 
 /* =========================================================
