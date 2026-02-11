@@ -256,6 +256,24 @@
       break-inside: avoid !important;
       page-break-inside: avoid !important;
     }
+
+    /* iPad landscape: move red footer inside table block to prevent page 2 spill */
+    html.iosPrintLandscape tr.assessBarRow,
+    html.iosPrintLandscape tr.assessBoxRow{
+      display: none !important;
+    }
+    html.iosPrintLandscape td.integratedFooterCell{
+      border: 0.3mm solid var(--grid);
+      padding: 0.35mm 1.2mm;
+      box-sizing: border-box;
+      color: #c40000;
+      font-size: 2.15mm;
+      font-weight: 800;
+      line-height: 1.0;
+      overflow: hidden;
+      text-align: left;
+      vertical-align: middle;
+    }
     }
   }
 </style>
@@ -268,7 +286,7 @@
 (function () {
   "use strict";
 
-  const PRINT_IPAD_VERSION = "v12feb26-8.11.7";
+  const PRINT_IPAD_VERSION = "v12feb26-8.11.8";
   console.log("PRINT-IPAD VERSIONE:", PRINT_IPAD_VERSION);
 
   const STORAGE_KEY = "CBTA_PRINT_PAYLOAD_V1";
@@ -554,12 +572,33 @@
     document.documentElement.classList.toggle("iosPrintLandscape", !!isLandscape);
   }
 
+  function appendIntegratedLandscapeFooterIfNeeded() {
+    const existing = document.querySelector("tr.integratedFooterRow");
+    if (existing) existing.remove();
+    if (!document.documentElement.classList.contains("iosPrintLandscape")) return;
+
+    const twoTablesTbody = document.querySelector("table.twotables tbody");
+    if (!twoTablesTbody) return;
+
+    const tr = document.createElement("tr");
+    tr.className = "integratedFooterRow";
+
+    const td = document.createElement("td");
+    td.className = "integratedFooterCell";
+    td.colSpan = 3;
+    td.innerHTML = escapeHtml(safeStr(brand.footerRed));
+
+    tr.appendChild(td);
+    twoTablesTbody.appendChild(tr);
+  }
+
   requestAnimationFrame(() => setTimeout(() => {
     try {
       setLandscapeClassForPrint();
       // micro delay per far applicare il CSS prima di aprire la preview
       setTimeout(() => {
         setLandscapeClassForPrint();
+        appendIntegratedLandscapeFooterIfNeeded();
         window.print();
       }, 80);
     } catch (_) {
