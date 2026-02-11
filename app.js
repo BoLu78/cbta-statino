@@ -7,7 +7,7 @@
    ✅ UI/CRUD/Settings: same behavior as stable version
    ========================================================= */
 
-const BUILD_ID = "12feb26-8.11";
+const BUILD_ID = "12feb26-8.11.1";
 function getAppVersionLabel() {
   return "v" + BUILD_ID;
 }
@@ -19,7 +19,7 @@ function injectAppVersion(){
   el.style.display = "";
   el.textContent = versionLabel;
 }
-console.log("APP.JS VERSIONE:", "v12feb26-8.11");
+console.log("APP.JS VERSIONE:", "v12feb26-8.11.1");
 
 
 /* =========================================================
