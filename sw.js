@@ -1,9 +1,9 @@
 /* =========================================================
    CBTA Statino — Service Worker (OFFLINE + GITHUB PAGES)
-   VERSION: v12feb26-8.11.10
+   VERSION: v12feb26-8.11.11
    ========================================================= */
 
-const CACHE_NAME = "cbta-statino-v12feb26-8.11.10";
+const CACHE_NAME = "cbta-statino-v12feb26-8.11.11";
 const STATIC_CACHE_URLS = [
   "./",
   "./index.html",

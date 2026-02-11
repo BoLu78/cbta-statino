@@ -62,7 +62,7 @@
     vertical-align:middle;
   }
   .logoCell img{
-    height:27mm;
+    height:var(--logo-h);
     width:auto;
     max-width:100%;
     object-fit:contain;
@@ -229,8 +229,14 @@
 
   @media print {
     @supports (-webkit-touch-callout: none) {
-    /* iPad print: auto zoom equivalente a 79% */
+    /* iPad print: auto zoom equivalente a 79%, mantenendo il contenuto centrato */
+    html.iosPrintZoom79 #printApp{
+      width: 100%;
+      text-align: center;
+    }
     html.iosPrintZoom79 .sheet{
+      display: inline-block;
+      vertical-align: top;
       zoom: 79%;
     }
 
@@ -290,7 +296,7 @@
 (function () {
   "use strict";
 
-  const PRINT_IPAD_VERSION = "v12feb26-8.11.10";
+  const PRINT_IPAD_VERSION = "v12feb26-8.11.11";
   console.log("PRINT-IPAD VERSIONE:", PRINT_IPAD_VERSION);
 
   const STORAGE_KEY = "CBTA_PRINT_PAYLOAD_V1";
