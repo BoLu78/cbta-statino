@@ -213,6 +213,19 @@
     #postPrintBar,
     #noDataWrap{ display:none !important; }
   }
+
+  @media print {
+    /* iOS-only: fit definitivo per evitare overflow che crea pagina 2 */
+    @supports (-webkit-touch-callout: none) {
+      :root{
+        --safe-y: 5.5mm; /* recupera ~0.5mm verticali */
+      }
+      .sheet{
+        transform: scale(0.985);   /* più forte di 0.99: elimina pagina 2 */
+        transform-origin: top left;
+      }
+    }
+  }
 </style>
 </head>
 <body>
