@@ -231,7 +231,7 @@
     @supports (-webkit-touch-callout: none) {
 
     /* iPad landscape: one-page hard fit (no scale/transform) */
-    html.iosPrintLandscape :root{
+    html.iosPrintLandscape{
       --safe-y: 3mm;
       --h-intro: 6.2mm;
       --h-guidance: 16.0mm;
@@ -267,7 +267,7 @@
 (function () {
   "use strict";
 
-  const PRINT_IPAD_VERSION = "v12feb26-8.11.5";
+  const PRINT_IPAD_VERSION = "v12feb26-8.11.6";
   console.log("PRINT-IPAD VERSIONE:", PRINT_IPAD_VERSION);
 
   const STORAGE_KEY = "CBTA_PRINT_PAYLOAD_V1";
