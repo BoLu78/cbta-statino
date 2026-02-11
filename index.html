@@ -7,6 +7,9 @@
   <title>CBTA – Compilation</title>
 
   <!-- CSS -->
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" sizes="152x152" href="./icon-152.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 
@@ -162,7 +165,7 @@
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      const SW_VERSION = 'v12feb26-8.11.14';
+      const SW_VERSION = 'v12feb26-8.11.16';
       let refreshing = false;
 
       navigator.serviceWorker.addEventListener('controllerchange', () => {
