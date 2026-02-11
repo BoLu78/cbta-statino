@@ -162,8 +162,20 @@
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then(() => console.log('Service Worker registered'))
+      const SW_VERSION = 'v12feb26-8.11.5';
+      let refreshing = false;
+
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (refreshing) return;
+        refreshing = true;
+        window.location.reload();
+      });
+
+      navigator.serviceWorker.register(`./sw.js?v=${encodeURIComponent(SW_VERSION)}`, { updateViaCache: 'none' })
+        .then((reg) => {
+          console.log('Service Worker registered');
+          try { reg.update(); } catch (e) {}
+        })
         .catch(err => console.warn('SW registration failed', err));
     });
   }

@@ -209,9 +209,22 @@
     gap:12px;
     font:600 16px Arial, Helvetica, sans-serif;
   }
+  #appVersionBadge{
+    position:fixed;
+    right:10px;
+    top:10px;
+    z-index:10000;
+    background:#fff;
+    border:1px solid #d0d0d0;
+    border-radius:999px;
+    padding:4px 10px;
+    color:#222;
+    font:600 12px Arial, Helvetica, sans-serif;
+  }
   @media print {
     #postPrintBar,
-    #noDataWrap{ display:none !important; }
+    #noDataWrap,
+    #appVersionBadge{ display:none !important; }
   }
 
   @media print {
@@ -248,12 +261,14 @@
 </head>
 <body>
 <div id="postPrintBar"><button id="backToAppBtn" type="button">Back to App</button></div>
+<div id="appVersionBadge"></div>
 <div id="printApp"></div>
 <script>
 (function () {
   "use strict";
 
-  console.log("PRINT-IPAD VERSIONE:", "v12feb26-8.11.4");
+  const PRINT_IPAD_VERSION = "v12feb26-8.11.5";
+  console.log("PRINT-IPAD VERSIONE:", PRINT_IPAD_VERSION);
 
   const STORAGE_KEY = "CBTA_PRINT_PAYLOAD_V1";
   const DEFAULT_OB_COLS_ORDER = ["PRO", "COM", "FPM", "FPA", "LTW", "PSD", "SAW", "WLM", "KNO"];
@@ -308,6 +323,8 @@
 
   const backBtn = document.getElementById("backToAppBtn");
   if (backBtn) backBtn.addEventListener("click", goBackToApp);
+  const versionBadge = document.getElementById("appVersionBadge");
+  if (versionBadge) versionBadge.textContent = "Build " + PRINT_IPAD_VERSION;
 
   let payload = null;
   try {
