@@ -7,7 +7,7 @@
    ✅ UI/CRUD/Settings: same behavior as stable version
    ========================================================= */
 
-const BUILD_ID = "11feb26-8";
+const BUILD_ID = "11feb26";
 function getAppVersionLabel() {
   return "v" + BUILD_ID;
 }
@@ -19,7 +19,7 @@ function injectAppVersion(){
   el.style.display = "";
   el.textContent = versionLabel;
 }
-console.log("APP.JS VERSIONE:", getAppVersionLabel());
+console.log("APP.JS VERSIONE: 11feb26");
 
 
 /* =========================================================
@@ -1299,6 +1299,13 @@ function buildRowsForPrint() {
 }
 
 function openPrintView() {
+  function isIpadSafari() {
+    const ua = navigator.userAgent || "";
+    const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+    return isIOS && isSafari;
+  }
+
   // NO POPUP: Safari-safe printing via hidden iframe
   const old = document.getElementById("cbtaPrintFrame");
   if (old) old.remove();
@@ -1316,6 +1323,8 @@ function openPrintView() {
   frame.style.zIndex = "2147483647";
   document.body.appendChild(frame);
 
+  const useIpadHardening = isIpadSafari();
+
   const cleanup = () => {
     const f = document.getElementById("cbtaPrintFrame");
     if (f) f.remove();
@@ -1326,7 +1335,7 @@ function openPrintView() {
     const rows = buildRowsForPrint();
     const formattedDate = fmtDate(info.date);
 
-    const appVersion = "12feb26-v8";
+    const appVersion = getAppVersionLabel();
 
     // LOGO embed (dataURL)
     const rawLogoPath = (BRAND && BRAND.logoFile) ? BRAND.logoFile : "logo.png";
@@ -1740,13 +1749,44 @@ function openPrintView() {
 </body>
 </html>`;
 
+    let finalHtml = html;
+    if (useIpadHardening) {
+      const viewportTag = '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />';
+      const baseTag = `<base href="${escapeHtml(document.baseURI || window.location.href)}" />`;
+      finalHtml = finalHtml.replace(viewportTag, `${viewportTag}\n${baseTag}`);
+      finalHtml = finalHtml.replace("triggerPrint();", "/* iPad print is triggered by parent after hardening waits */");
+    }
+
     // expose cleanup to iframe
     window.__CBTA_CLEANUP__ = () => { try { cleanup(); } catch(e){} };
 
     const doc = frame.contentDocument || frame.contentWindow.document;
     doc.open();
-    doc.write(html);
+    doc.write(finalHtml);
     doc.close();
+
+    if (useIpadHardening) {
+      const win = frame.contentWindow;
+      const fdoc = frame.contentDocument || (win && win.document);
+      if (fdoc) {
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        if (fdoc.fonts && fdoc.fonts.ready) {
+          try { await fdoc.fonts.ready; } catch {}
+        }
+        const imgs = Array.from(fdoc.images || []);
+        await Promise.all(
+          imgs.map((img) => new Promise((resolve) => {
+            if (img.complete) return resolve();
+            img.addEventListener("load", () => resolve(), { once: true });
+            img.addEventListener("error", () => resolve(), { once: true });
+          }))
+        );
+      }
+      if (win) {
+        try { win.focus(); } catch {}
+        try { win.print(); } catch {}
+      }
+    }
   })().catch((e) => {
     cleanup();
     alert("Print view failed.");
