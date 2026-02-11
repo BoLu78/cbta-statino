@@ -7,7 +7,7 @@
    ✅ UI/CRUD/Settings: same behavior as stable version
    ========================================================= */
 
-const BUILD_ID = "11feb26-7.1";
+const BUILD_ID = "11feb26-8";
 function getAppVersionLabel() {
   return "v" + BUILD_ID;
 }
@@ -1261,7 +1261,8 @@ function ensureResetButton() {
 
 /* =========================================================
    CAPITOLO 16 — EXPORT / PRINT  (DEF)
-   1 PAGINA • A4 • LANDSCAPE • iPad Safari
+   1 PAGINA • A4 • LANDSCAPE • iPad Safari (STABLE)
+   VERSION: 12feb26-v8
    ========================================================= */
 
 function ensureExportButton() {
@@ -1298,164 +1299,162 @@ function buildRowsForPrint() {
 }
 
 function openPrintView() {
-  const info = currentTrainingInfo();
-  const rows = buildRowsForPrint();
-  const formattedDate = fmtDate(info.date);
-  const appVersion = getAppVersionLabel();
+  // NO POPUP: Safari-safe printing via hidden iframe
+  const old = document.getElementById("cbtaPrintFrame");
+  if (old) old.remove();
 
-  const logoUrl = new URL(BRAND.logoFile, window.location.href).href;
-  const obColWidthMm = (102 / OB_COLS_ORDER.length).toFixed(3);
-  const obColGroup = OB_COLS_ORDER.map(() => `<col style="width:${obColWidthMm}mm">`).join("");
+  const frame = document.createElement("iframe");
+  frame.id = "cbtaPrintFrame";
+  frame.style.position = "fixed";
+  frame.style.left = "0";
+  frame.style.top = "0";
+  frame.style.width = "1px";
+  frame.style.height = "1px";
+  frame.style.opacity = "0";
+  frame.style.pointerEvents = "none";
+  frame.style.border = "0";
+  frame.style.zIndex = "2147483647";
+  document.body.appendChild(frame);
 
-  const obTableBody = rows.map(r => {
-    const cells = OB_COLS_ORDER.map(code => {
-      const arr = ensureArray(r.competencies && r.competencies[code]);
-      const txt = arr.length ? arr.join(",") : "";
-      return `<td class="cell obcell"><div class="clip clip-ob">${escapeHtml(txt)}</div></td>`;
+  const cleanup = () => {
+    const f = document.getElementById("cbtaPrintFrame");
+    if (f) f.remove();
+  };
+
+  (async () => {
+    const info = currentTrainingInfo();
+    const rows = buildRowsForPrint();
+    const formattedDate = fmtDate(info.date);
+
+    const appVersion = "12feb26-v8";
+
+    // LOGO embed (dataURL)
+    const rawLogoPath = (BRAND && BRAND.logoFile) ? BRAND.logoFile : "logo.png";
+    const logoUrl = new URL(rawLogoPath, window.location.href).href;
+
+    let logoSrc = logoUrl;
+    try {
+      const resp = await fetch(logoUrl, { cache: "force-cache" });
+      if (resp.ok) {
+        const blob = await resp.blob();
+        logoSrc = await new Promise((resolve) => {
+          const r = new FileReader();
+          r.onload = () => resolve(String(r.result || logoUrl));
+          r.onerror = () => resolve(logoUrl);
+          r.readAsDataURL(blob);
+        });
+      }
+    } catch (_) {
+      logoSrc = logoUrl;
+    }
+
+    const obColWidthMm = (102 / OB_COLS_ORDER.length).toFixed(3);
+    const obColGroup = OB_COLS_ORDER.map(() => `<col style="width:${obColWidthMm}mm">`).join("");
+
+    const obTableBody = rows.map(r => {
+      const cells = OB_COLS_ORDER.map(code => {
+        const arr = ensureArray(r.competencies && r.competencies[code]);
+        const txt = arr.length ? arr.join(",") : "";
+        return `<td class="cell obcell"><div class="clip clip-ob">${escapeHtml(txt)}</div></td>`;
+      }).join("");
+      return `<tr class="row">${cells}</tr>`;
     }).join("");
-    return `<tr class="row">${cells}</tr>`;
-  }).join("");
 
-  const obsTableBody = rows.map(r => `
-    <tr class="row">
-      <td class="cell task"><div class="clip clip-task">${escapeHtml(r.task)}</div></td>
-      <td class="cell comment"><div class="clip clip-comment">${escapeHtml(r.comment)}</div></td>
-      <td class="cell tem"><div class="clip clip-tem">${escapeHtml(r.tem)}</div></td>
-      <td class="cell mark">${escapeHtml(r.cp)}</td>
-      <td class="cell mark">${escapeHtml(r.fo)}</td>
-    </tr>
-  `).join("");
+    const obsTableBody = rows.map(r => `
+      <tr class="row">
+        <td class="cell task"><div class="clip clip-task">${escapeHtml(r.task)}</div></td>
+        <td class="cell comment"><div class="clip clip-comment">${escapeHtml(r.comment)}</div></td>
+        <td class="cell tem"><div class="clip clip-tem">${escapeHtml(r.tem)}</div></td>
+        <td class="cell mark">${escapeHtml(r.cp)}</td>
+        <td class="cell mark">${escapeHtml(r.fo)}</td>
+      </tr>
+    `).join("");
 
-  const html = `<!doctype html>
+    const dividerSvg = `
+      <svg viewBox="0 0 20 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M18 40 L6 12 L6 28 L2 28 L2 52 L6 52 L6 68 Z"
+              fill="#9a9a9a" stroke="#7a7a7a" stroke-width="1"/>
+      </svg>
+    `;
+
+    const html = `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>CBTA Statino - Print</title>
-
 <style>
   :root{
     --paper-w: 297mm;
     --paper-h: 210mm;
-    /* margini cartacei un filo piu larghi del bordo template, ma stabili e 1 pagina */
-    --safe-margin-x: 6mm;
-    --safe-margin-y: 6mm;
-    --content-w: calc(var(--paper-w) - (var(--safe-margin-x) * 2));
-    --content-h: calc(var(--paper-h) - (var(--safe-margin-y) * 2));
-    --gap-v: 0.6mm;
-    --gap-h: 2.6mm;
-
-    /* altezze deterministiche con margine di sicurezza per rounding Safari */
+    --safe-x: 6mm;
+    --safe-y: 6mm;
+    --ink:#000;
+    --grid:#000;
+    --bar:#d9d9d9;
     --h-header: 22mm;
     --h-intro: 7.5mm;
     --h-bar: 5mm;
     --h-info: 6.5mm;
     --h-guidance: 17.5mm;
-    --h-tables: 114mm;     /* 11 righe * 10mm + header 8mm ≈ dentro 118mm */
+    --h-tables: 114mm;
     --h-assessbar: 5mm;
     --h-assessbox: 9mm;
-
+    --left-w: 176mm;
+    --div-w: 6mm;
+    --right-w: 102mm;
     --logo-h: 20mm;
-    /* come template: tabella sinistra + barra grigia + tabella destra */
-    --left-table-w: 176mm;
-    --divider-w: 6mm;
-    --right-table-w: 102mm;
-    --split-w: calc(var(--left-table-w) + var(--divider-w) + var(--right-table-w));
-
     --row-head-h: 8mm;
     --row-body-h: 10mm;
-
-    --ink:#000;
-    --grid:#000;
-    --bar:#d9d9d9;
   }
 
-  @page { size: A4 landscape; size: 297mm 210mm; margin: 0mm; }
+  @page { size: A4 landscape; margin: 0; }
 
   html, body { margin:0; padding:0; }
   html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  body{
-    background:#f3f4f6;
-    color:var(--ink);
-    font-family: Arial, Helvetica, sans-serif;
-  }
+  body { font-family: Arial, Helvetica, sans-serif; color: var(--ink); background:#fff; }
 
-  .toolbar{
-    position: fixed;
-    top: 8px;
-    right: 10px;
-    z-index: 9999;
-    display:flex;
-    gap:8px;
-  }
-  .btn{
-    padding:10px 12px;
-    border-radius:10px;
-    border:1px solid #d7d7d7;
-    background:#fff;
-    cursor:pointer;
-    font-weight:700;
-  }
-
-  .sheet{
-    width: var(--paper-w);
-    height: var(--paper-h);
-    margin: 8px auto;
-    background:#fff;
-  }
+  .sheet{ width: var(--paper-w); height: var(--paper-h); margin: 0; background:#fff; }
   .page{
     width: var(--paper-w);
     height: var(--paper-h);
-    padding: var(--safe-margin-y) var(--safe-margin-x);
+    box-sizing:border-box;
+    padding: var(--safe-y) var(--safe-x);
     background:#fff;
-    box-sizing:border-box;
-  }
-  .fitRoot{
-    width: var(--content-w);
-    height: var(--content-h);
-    box-sizing:border-box;
-    display:grid;
-    grid-template-rows:
-      var(--h-header)
-      var(--h-intro)
-      var(--h-bar)
-      var(--h-info)
-      var(--h-guidance)
-      var(--h-tables)
-      var(--h-assessbar)
-      var(--h-assessbox);
-    row-gap: var(--gap-v);
   }
 
-  .print-content{
+  table.layout{
+    width: calc(var(--paper-w) - (var(--safe-x) * 2));
+    height: calc(var(--paper-h) - (var(--safe-y) * 2));
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+  }
+  table.layout > tbody > tr > td{ padding:0; vertical-align:top; }
+
+  table.headerTable{ width:100%; height:100%; border-collapse:collapse; table-layout:fixed; }
+  table.headerTable td{ border:0.3mm solid var(--grid); padding:0.6mm 1.2mm; vertical-align:middle; }
+  .logoCell{
+    width:66mm;
+    text-align:center;
+    padding:0 !important;
+    vertical-align:middle;
+  }
+  .logoCell img{
+    height:27mm;
+    width:auto;
+    max-width:100%;
+    object-fit:contain;
     display:block;
-    height:100%;
+    margin:0 auto;
   }
+  .titleCell{ text-align:center; }
+  .titleCell .t1{ font-size:3.7mm; font-weight:900; line-height:1.02; letter-spacing:0.05mm; }
+  .metaCell{ width:69mm; font-size:2.45mm; line-height:1.08; }
 
-  .no-break{
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
+  .intro{ font-size:2.45mm; line-height:1.08; padding:0.2mm 0; }
 
-  .headerTable { width:100%; height:100%; border-collapse:collapse; table-layout:fixed; }
-  .headerTable td { border:0.3mm solid var(--grid); padding:0.6mm 1.2mm; vertical-align:middle; }
-  .colL { width:66mm; } .colC { width:146mm; } .colR { width:69mm; }
-
-  .logoCell { text-align:center; padding:0.3mm 1mm !important; }
-  .logoCell img { width:100%; height:var(--logo-h); object-fit:contain; display:block; margin:0 auto; }
-  .titleCell { text-align:center; }
-  .titleCell .t1 { font-size:3.7mm; font-weight:900; line-height:1.02; letter-spacing:0.05mm; }
-  .metaCell { font-size:2.45mm; line-height:1.08; }
-
-  .intro {
-    margin:0;
-    font-size:2.45mm;
-    line-height:1.08;
-    padding:0.2mm 0;
-    box-sizing:border-box;
-  }
-
-  .bar {
+  .bar{
     border:0.3mm solid var(--grid);
     background:var(--bar);
     font-weight:900;
@@ -1465,24 +1464,14 @@ function openPrintView() {
     box-sizing:border-box;
   }
 
-  .infoTable { width:100%; height:100%; border-collapse:collapse; table-layout:fixed; margin:0; }
-  .infoTable td { border:0.3mm solid var(--grid); padding:0.55mm 1.2mm; font-size:2.45mm; line-height:1.05; }
-  .label { font-weight:800; }
-  .valueDate { white-space:nowrap; font-size:2.35mm; }
+  table.infoTable{ width:100%; height:100%; border-collapse:collapse; table-layout:fixed; }
+  table.infoTable td{ border:0.3mm solid var(--grid); padding:0.55mm 1.2mm; font-size:2.45mm; line-height:1.05; }
+  .label{ font-weight:800; }
+  .valueDate{ white-space:nowrap; font-size:2.35mm; }
 
-  .twoCols{
-    display:grid;
-    grid-template-columns: var(--left-table-w) var(--divider-w) var(--right-table-w);
-    column-gap: 0mm;
-    width:var(--split-w);
-    margin:0 auto;
-    height:100%;
-  }
-  .midSep{
-    background:#e6e6e6;
-    border:0.3mm solid var(--grid);
-  }
-  .box{ display:block; height:100%; }
+  table.guidance{ width: calc(var(--left-w) + var(--div-w) + var(--right-w)); height:100%; border-collapse:collapse; table-layout:fixed; margin:0 auto; }
+  table.guidance td{ padding:0; vertical-align:top; }
+  .midSep{ width:var(--div-w); background:#e6e6e6; border:0.3mm solid var(--grid); }
   .boxTitle{
     border:0.3mm solid var(--grid);
     background:var(--bar);
@@ -1490,6 +1479,7 @@ function openPrintView() {
     font-size:2.65mm;
     line-height:4mm;
     padding:0 1.5mm;
+    box-sizing:border-box;
   }
   .boxBody{
     border-left:0.3mm solid var(--grid);
@@ -1498,36 +1488,28 @@ function openPrintView() {
     padding:0.8mm 1.5mm;
     font-size:2.3mm;
     line-height:1.14;
-    height: calc(100% - 4.2mm);
     box-sizing:border-box;
+    height: calc(100% - 4.2mm);
   }
-  .bullets { margin:0; padding:0; list-style:none; }
-  .bullets li { display:grid; grid-template-columns:4.5mm 1fr; column-gap:1.4mm; margin:0.3mm 0; }
-  .arrow { font-weight:900; font-size:2.9mm; line-height:1; }
+  .bullets{ margin:0; padding:0; list-style:none; }
+  .bullets li{ display:block; margin:0.3mm 0; }
+  .bullets .arrow{ font-weight:900; font-size:2.9mm; display:inline-block; width:5mm; }
 
-  .tables{
-    display:grid;
-    grid-template-columns: var(--left-table-w) var(--divider-w) var(--right-table-w);
-    column-gap: 0mm; /* nel template non è un gap bianco: è una barra */
-    width:var(--split-w);
-    margin:0 auto;
-    height:100%;
-  }
-  .tables > div { width:100%; height:100%; }
+  table.twotables{ width: calc(var(--left-w) + var(--div-w) + var(--right-w)); height:100%; border-collapse:collapse; table-layout:fixed; margin:0 auto; }
+  table.twotables td{ padding:0; vertical-align:top; }
   .divider{
-    width:100%;
-    height:100%;
+    width:var(--div-w);
     background:#e6e6e6;
     border:0.3mm solid var(--grid);
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    text-align:center;
+    vertical-align:middle !important;
   }
-  .divider svg{ width:5mm; height:20mm; transform:scaleX(-1); transform-origin:50% 50%; }
+  .divider svg{ width:5mm; height:20mm; }
 
-  table.grid { width:100%; height:100%; border-collapse:collapse; table-layout:fixed; }
-  table.grid th, table.grid td { border:0.3mm solid var(--grid); vertical-align:middle; }
-  table.grid thead th {
+  table.grid{ width:100%; height:100%; border-collapse:collapse; table-layout:fixed; }
+  table.grid th, table.grid td{ border:0.3mm solid var(--grid); vertical-align:middle; }
+
+  table.grid thead th{
     background:#f2f2f2;
     font-weight:900;
     height:var(--row-head-h);
@@ -1536,42 +1518,26 @@ function openPrintView() {
     line-height:1.02;
     box-sizing:border-box;
   }
-  table.grid tbody td {
+  table.grid tbody td{
     height:var(--row-body-h);
     padding:0.45mm 0.8mm;
     font-size:2.3mm;
-    text-align:center;
     line-height:1.03;
     box-sizing:border-box;
+    text-align:center;
   }
 
-  .row { height: var(--row-body-h); }
+  .cell{ white-space: normal; overflow-wrap: break-word; word-break: break-word; hyphens: none; }
+  .task{ width:35%; font-weight:700; text-align:left; }
+  .comment{ width:52%; text-align:left; }
+  .tem{ width:13%; }
+  .mark{ font-weight:900; }
+  .obcell{ font-size:2.25mm; line-height:1.02; }
 
-  .cell { overflow-wrap:anywhere; white-space:normal; }
-  .task { width:35%; font-weight:700; text-align:left; }
-  .comment { width:52%; text-align:left; }
-  .tem { width:13%; }
-  .mark { font-weight:900; }
+  .clip{ display:block; overflow:hidden; width:100%; }
+  .clip-task, .clip-comment, .clip-tem{ line-height:1.08; height:5.3mm; overflow:hidden; }
+  .clip-ob{ line-height:1.02; height:2.7mm; overflow:hidden; }
 
-  .obcell { font-size:2.25mm; line-height:1.02; }
-  .clip{
-    display:block;
-    overflow:hidden;
-    width:100%;
-  }
-  /* NO -webkit-line-clamp: deve essere uguale su Safari/Chrome */
-  .clip-task, .clip-comment, .clip-tem{
-    line-height:1.08;
-    height:5.3mm;         /* ~2 righe a 2.3mm */
-    overflow:hidden;
-  }
-  .clip-ob{
-    line-height:1.02;
-    height:2.7mm;         /* ~1 riga */
-    overflow:hidden;
-  }
-
-  /* Sezione 3 come template */
   .assessBar{
     border:0.3mm solid var(--grid);
     background:var(--bar);
@@ -1592,179 +1558,154 @@ function openPrintView() {
     overflow:hidden;
   }
 
-  @media print{
-    @page { size: A4 landscape; size: 297mm 210mm; margin: 0mm; }
-    html, body{
-      width:297mm;
-      height:210mm;
-      margin:0 !important;
-      padding:0 !important;
-      overflow:visible !important;
-      background:#fff !important;
-    }
-    body,
-    .sheet,
-    .page,
-    .fitRoot,
-    .print-content{
-      display:block !important;
-    }
-    .toolbar{ display:none !important; }
-    .sheet{
-      width:297mm !important;
-      height:210mm !important;
-      margin:0 auto !important;
-      overflow:visible !important;
-    }
-    .page{
-      width:297mm !important;
-      height:210mm !important;
-      margin:0 !important;
-      padding:var(--safe-margin-y) var(--safe-margin-x) !important;
-      overflow:visible !important;
-      box-sizing:border-box !important;
-    }
-    .fitRoot{
-      width: var(--content-w) !important;
-      height: var(--content-h) !important;
-      overflow:visible !important;
-    }
-    .print-content,
-    .fitRoot,
-    .headerTable,
-    .infoTable,
-    .twoCols,
-    .tables,
-    table.grid,
-    .print-body,
-    .assessBar,
-    .assessBox{
-      break-inside: avoid !important;
-      page-break-inside: avoid !important;
-    }
-    .tables,
-    .tables > div{
-      break-inside: avoid !important;
-      page-break-inside: avoid !important;
-    }
-    .assessBox{ color:#c40000 !important; }
-    tr {
-      break-inside: avoid !important;
-      page-break-inside: avoid !important;
-    }
-  }
+  *{ break-inside: avoid; page-break-inside: avoid; }
+  tr{ break-inside: avoid; page-break-inside: avoid; }
 </style>
 </head>
-
 <body>
-<div class="toolbar">
-  <button class="btn" onclick="triggerPrint()">Print / Save PDF</button>
-  <button class="btn" onclick="window.close()">Close</button>
-</div>
+<div class="sheet">
+  <div class="page">
+    <table class="layout">
+      <tbody>
+        <tr style="height: var(--h-header);">
+          <td>
+            <table class="headerTable">
+              <colgroup>
+                <col style="width:66mm">
+                <col style="width:146mm">
+                <col style="width:69mm">
+              </colgroup>
+              <tr>
+                <td class="logoCell"><img src="${escapeHtml(logoSrc)}" alt="NEOS" /></td>
+                <td class="titleCell"><div class="t1">${escapeHtml(BRAND.title)}</div></td>
+                <td class="metaCell">
+                  <div>${escapeHtml(BRAND.metaRight.sn)}</div>
+                  <div>${escapeHtml(BRAND.metaRight.revision)}</div>
+                  <div>${escapeHtml(BRAND.metaRight.date)}</div>
+                  <div>${escapeHtml(BRAND.metaRight.edited)}</div>
+                  <div>App version: ${escapeHtml(appVersion)}</div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
 
-<div class="sheet" id="sheet">
-<div class="page print-page">
-  <div class="fitRoot" id="fitRoot">
+        <tr style="height: var(--h-intro);">
+          <td>
+            <div class="intro">
+              ${escapeHtml(BRAND.introText)
+                .replaceAll("capturing the instructor observations","<b>capturing the instructor observations</b>")
+                .replaceAll("root cause classification","<b>root cause classification</b>")}
+            </div>
+          </td>
+        </tr>
 
-  <table class="headerTable">
-    <colgroup><col class="colL"/><col class="colC"/><col class="colR"/></colgroup>
-    <tr>
-      <td class="logoCell"><img src="${escapeHtml(logoUrl)}" alt="NEOS" /></td>
-      <td class="titleCell"><div class="t1">${escapeHtml(BRAND.title)}</div></td>
-      <td class="metaCell">
-        <div>${escapeHtml(BRAND.metaRight.sn)}</div>
-        <div>${escapeHtml(BRAND.metaRight.revision)}</div>
-        <div>${escapeHtml(BRAND.metaRight.date)}</div>
-        <div>${escapeHtml(BRAND.metaRight.edited)}</div>
-        <div>App version: ${escapeHtml(appVersion)}</div>
-      </td>
-    </tr>
-  </table>
+        <tr style="height: var(--h-bar);">
+          <td><div class="bar">TRAINING INFORMATION</div></td>
+        </tr>
 
-  <div class="intro">
-    ${escapeHtml(BRAND.introText)
-      .replaceAll("capturing the instructor observations","<b>capturing the instructor observations</b>")
-      .replaceAll("root cause classification","<b>root cause classification</b>")}
+        <tr style="height: var(--h-info);">
+          <td>
+            <table class="infoTable">
+              <colgroup>
+                <col style="width:28mm"><col style="width:56mm">
+                <col style="width:26mm"><col style="width:36mm">
+                <col style="width:20mm"><col style="width:46mm">
+                <col style="width:16mm"><col style="width:53mm">
+              </colgroup>
+              <tr>
+                <td class="label">Event name</td>
+                <td class="value">${escapeHtml(info.eventName)}</td>
+                <td class="label">Name CPT</td>
+                <td class="value">${escapeHtml(info.nameCpt)}</td>
+                <td class="label">Name FO</td>
+                <td class="value">${escapeHtml(info.nameFo)}</td>
+                <td class="label">Date</td>
+                <td class="value valueDate">${escapeHtml(formattedDate)}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr style="height: var(--h-guidance);">
+          <td>
+            <table class="guidance">
+              <colgroup>
+                <col style="width: var(--left-w);">
+                <col style="width: var(--div-w);">
+                <col style="width: var(--right-w);">
+              </colgroup>
+              <tr>
+                <td>
+                  <div class="boxTitle">1. Observe</div>
+                  <div class="boxBody">
+                    <ul class="bullets">
+                      ${BRAND.observeGuidance.map(t => `<li><span class="arrow">➔</span>${escapeHtml(t)}</li>`).join("")}
+                    </ul>
+                  </div>
+                </td>
+                <td class="midSep"></td>
+                <td>
+                  <div class="boxTitle">2. Root Cause Classification</div>
+                  <div class="boxBody">
+                    <ul class="bullets">
+                      ${BRAND.rootCauseGuidance.map(t => `<li><span class="arrow">➔</span>${escapeHtml(t)}</li>`).join("")}
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr style="height: var(--h-tables);">
+          <td>
+            <table class="twotables">
+              <colgroup>
+                <col style="width: var(--left-w);">
+                <col style="width: var(--div-w);">
+                <col style="width: var(--right-w);">
+              </colgroup>
+              <tr>
+                <td>
+                  <table class="grid" id="tblLeft">
+                    <colgroup>
+                      <col style="width:58mm"><col style="width:86mm"><col style="width:23mm"><col style="width:4.5mm"><col style="width:4.5mm">
+                    </colgroup>
+                    <thead>
+                      <tr><th>Task</th><th>Comments</th><th>TEM notes</th><th>CP</th><th>FO</th></tr>
+                    </thead>
+                    <tbody>${obsTableBody}</tbody>
+                  </table>
+                </td>
+
+                <td class="divider">${dividerSvg}</td>
+
+                <td>
+                  <table class="grid" id="tblRight">
+                    <colgroup>${obColGroup}</colgroup>
+                    <thead><tr>${OB_COLS_ORDER.map(c => `<th>${escapeHtml(c)}</th>`).join("")}</tr></thead>
+                    <tbody>${obTableBody}</tbody>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr style="height: var(--h-assessbar);">
+          <td><div class="assessBar">3. Assessment of Competencies</div></td>
+        </tr>
+
+        <tr style="height: var(--h-assessbox);">
+          <td><div class="assessBox">${escapeHtml(BRAND.footerRed)}</div></td>
+        </tr>
+      </tbody>
+    </table>
   </div>
-
-  <div class="bar">TRAINING INFORMATION</div>
-  <table class="infoTable">
-    <colgroup>
-      <col style="width:28mm"><col style="width:56mm">
-      <col style="width:26mm"><col style="width:36mm">
-      <col style="width:20mm"><col style="width:46mm">
-      <col style="width:16mm"><col style="width:53mm">
-    </colgroup>
-    <tr>
-      <td class="label">Event name</td>
-      <td class="value">${escapeHtml(info.eventName)}</td>
-      <td class="label">Name CPT</td>
-      <td class="value">${escapeHtml(info.nameCpt)}</td>
-      <td class="label">Name FO</td>
-      <td class="value">${escapeHtml(info.nameFo)}</td>
-      <td class="label">Date</td>
-      <td class="value valueDate">${escapeHtml(formattedDate)}</td>
-    </tr>
-  </table>
-
-  <div class="twoCols">
-    <div class="box">
-      <div class="boxTitle">1. Observe</div>
-      <div class="boxBody">
-        <ul class="bullets">
-          ${BRAND.observeGuidance.map(t => `<li><div class="arrow">➔</div><div>${escapeHtml(t)}</div></li>`).join("")}
-        </ul>
-      </div>
-    </div>
-    <div class="midSep"></div>
-    <div class="box">
-      <div class="boxTitle">2. Root Cause Classification</div>
-      <div class="boxBody">
-        <ul class="bullets">
-          ${BRAND.rootCauseGuidance.map(t => `<li><div class="arrow">➔</div><div>${escapeHtml(t)}</div></li>`).join("")}
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <div class="print-content print-body no-break">
-    <div class="tables">
-      <div>
-        <table class="grid" id="tblLeft">
-          <colgroup>
-            <col style="width:58mm"><col style="width:86mm"><col style="width:23mm"><col style="width:4.5mm"><col style="width:4.5mm">
-          </colgroup>
-          <thead>
-            <tr><th>Task</th><th>Comments</th><th>TEM notes</th><th>CP</th><th>FO</th></tr>
-          </thead>
-          <tbody>${obsTableBody}</tbody>
-        </table>
-      </div>
-
-      <div class="divider" aria-hidden="true">
-        <svg viewBox="0 0 20 80" xmlns="http://www.w3.org/2000/svg">
-          <path d="M2 40 L14 12 L14 28 L18 28 L18 52 L14 52 L14 68 Z" fill="#9a9a9a" stroke="#7a7a7a" stroke-width="1"/>
-        </svg>
-      </div>
-
-      <div>
-        <table class="grid" id="tblRight">
-          <colgroup>${obColGroup}</colgroup>
-          <thead><tr>${OB_COLS_ORDER.map(c => `<th>${escapeHtml(c)}</th>`).join("")}</tr></thead>
-          <tbody>${obTableBody}</tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <div class="assessBar">3. Assessment of Competencies</div>
-  <div class="assessBox">${escapeHtml(BRAND.footerRed)}</div>
-</div>
-</div>
 </div>
 
 <script>
-  /* stampa deterministica: niente misure a runtime (no sync/altezze JS) */
   async function waitImg(img){
     return new Promise(res=>{
       const t=setTimeout(res,1500);
@@ -1774,21 +1715,42 @@ function openPrintView() {
       img.addEventListener("error", done, {once:true});
     });
   }
-  async function triggerPrint(){
-    const imgs = Array.from(document.images||[]);
-    await Promise.all(imgs.map(waitImg));
-    window.print();
-  }
-</script>
 
+  async function triggerPrint(){
+    const imgs = Array.from(document.images || []);
+    await Promise.all(imgs.map(waitImg));
+
+    document.body.offsetHeight;
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    document.body.offsetHeight;
+
+    window.print();
+
+    // cleanup after print (best effort)
+    try { parent && parent.__CBTA_CLEANUP__ && parent.__CBTA_CLEANUP__(); } catch(e){}
+  }
+
+  window.onafterprint = () => {
+    try { parent && parent.__CBTA_CLEANUP__ && parent.__CBTA_CLEANUP__(); } catch(e){}
+  };
+
+  // Auto open print dialog
+  triggerPrint();
+</script>
 </body>
 </html>`;
 
-  const w = window.open("", "_blank");
-  if (!w) { alert("Popup blocked. Allow popups to generate PDF."); return; }
-  w.document.open();
-  w.document.write(html);
-  w.document.close();
+    // expose cleanup to iframe
+    window.__CBTA_CLEANUP__ = () => { try { cleanup(); } catch(e){} };
+
+    const doc = frame.contentDocument || frame.contentWindow.document;
+    doc.open();
+    doc.write(html);
+    doc.close();
+  })().catch((e) => {
+    cleanup();
+    alert("Print view failed.");
+  });
 }
 /* =========================================================
    CAPITOLO 17 — INIT
