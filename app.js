@@ -1337,25 +1337,33 @@ function openPrintView() {
   :root{
     --paper-w: 297mm;
     --paper-h: 210mm;
-    --safe-margin-x: 8mm;
-    --safe-margin-y: 8mm;
+    /* margini cartacei un filo piu larghi del bordo template, ma stabili e 1 pagina */
+    --safe-margin-x: 6mm;
+    --safe-margin-y: 6mm;
     --content-w: calc(var(--paper-w) - (var(--safe-margin-x) * 2));
     --content-h: calc(var(--paper-h) - (var(--safe-margin-y) * 2));
-    --gap-v: 0.8mm;
-    --gap-h: 3mm;
+    --gap-v: 0.7mm;
+    --gap-h: 2.6mm;
+
+    /* altezze deterministiche con margine di sicurezza per rounding Safari */
     --h-header: 22mm;
-    --h-intro: 9mm;
+    --h-intro: 8mm;
     --h-bar: 5mm;
-    --h-info: 8mm;
-    --h-guidance: 20mm;
-    --h-tables: 120.2mm;
-    --h-footer: 5mm;
-    --h-table-block: calc(var(--h-tables) + var(--h-footer) + var(--gap-v));
+    --h-info: 7mm;
+    --h-guidance: 18mm;
+    --h-tables: 118mm;     /* 11 righe * 10mm + header 8mm ≈ dentro 118mm */
+    --h-assessbar: 5mm;
+    --h-assessbox: 10mm;
+
     --logo-h: 20mm;
+    /* come template: tabella sinistra + barra grigia + tabella destra */
     --left-table-w: 176mm;
+    --divider-w: 6mm;
     --right-table-w: 102mm;
-    --row-head-h: 7.2mm;
-    --row-body-h: 10.25mm;
+
+    --row-head-h: 8mm;
+    --row-body-h: 10mm;
+
     --ink:#000;
     --grid:#000;
     --bar:#d9d9d9;
@@ -1406,7 +1414,15 @@ function openPrintView() {
     height: var(--content-h);
     box-sizing:border-box;
     display:grid;
-    grid-template-rows: var(--h-header) var(--h-intro) var(--h-bar) var(--h-info) var(--h-guidance) var(--h-table-block);
+    grid-template-rows:
+      var(--h-header)
+      var(--h-intro)
+      var(--h-bar)
+      var(--h-info)
+      var(--h-guidance)
+      var(--h-tables)
+      var(--h-assessbar)
+      var(--h-assessbox);
     row-gap: var(--gap-v);
   }
 
@@ -1421,7 +1437,7 @@ function openPrintView() {
   }
 
   .headerTable { width:100%; height:100%; border-collapse:collapse; table-layout:fixed; }
-  .headerTable td { border:0.2mm solid var(--grid); padding:0.6mm 1.2mm; vertical-align:middle; }
+  .headerTable td { border:0.3mm solid var(--grid); padding:0.6mm 1.2mm; vertical-align:middle; }
   .colL { width:66mm; } .colC { width:146mm; } .colR { width:69mm; }
 
   .logoCell { text-align:center; padding:0.3mm 1mm !important; }
@@ -1439,7 +1455,7 @@ function openPrintView() {
   }
 
   .bar {
-    border:0.2mm solid var(--grid);
+    border:0.3mm solid var(--grid);
     background:var(--bar);
     font-weight:900;
     font-size:2.8mm;
@@ -1449,20 +1465,24 @@ function openPrintView() {
   }
 
   .infoTable { width:100%; height:100%; border-collapse:collapse; table-layout:fixed; margin:0; }
-  .infoTable td { border:0.2mm solid var(--grid); padding:0.55mm 1.2mm; font-size:2.45mm; line-height:1.05; }
+  .infoTable td { border:0.3mm solid var(--grid); padding:0.55mm 1.2mm; font-size:2.45mm; line-height:1.05; }
   .label { font-weight:800; }
   .valueDate { white-space:nowrap; font-size:2.35mm; }
 
   .twoCols{
     display:grid;
-    grid-template-columns: 162mm 116mm;
+    grid-template-columns: 200mm 4mm 1fr; /* come template: box grande + separatore grigio + box piccolo */
     column-gap: var(--gap-h);
     width:100%;
     height:100%;
   }
+  .midSep{
+    background:#e6e6e6;
+    border:0.3mm solid var(--grid);
+  }
   .box{ display:block; height:100%; }
   .boxTitle{
-    border:0.2mm solid var(--grid);
+    border:0.3mm solid var(--grid);
     background:var(--bar);
     font-weight:900;
     font-size:2.65mm;
@@ -1470,9 +1490,9 @@ function openPrintView() {
     padding:0 1.5mm;
   }
   .boxBody{
-    border-left:0.2mm solid var(--grid);
-    border-right:0.2mm solid var(--grid);
-    border-bottom:0.2mm solid var(--grid);
+    border-left:0.3mm solid var(--grid);
+    border-right:0.3mm solid var(--grid);
+    border-bottom:0.3mm solid var(--grid);
     padding:0.8mm 1.5mm;
     font-size:2.3mm;
     line-height:1.14;
@@ -1485,15 +1505,25 @@ function openPrintView() {
 
   .tables{
     display:grid;
-    grid-template-columns: var(--left-table-w) var(--right-table-w);
-    column-gap: var(--gap-h);
+    grid-template-columns: var(--left-table-w) var(--divider-w) var(--right-table-w);
+    column-gap: 0mm; /* nel template non è un gap bianco: è una barra */
     width:100%;
-    height:var(--h-tables);
+    height:100%;
   }
   .tables > div { width:100%; height:100%; }
+  .divider{
+    width:100%;
+    height:100%;
+    background:#e6e6e6;
+    border:0.3mm solid var(--grid);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .divider svg{ width:5mm; height:20mm; }
 
   table.grid { width:100%; height:100%; border-collapse:collapse; table-layout:fixed; }
-  table.grid th, table.grid td { border:0.2mm solid var(--grid); vertical-align:middle; }
+  table.grid th, table.grid td { border:0.3mm solid var(--grid); vertical-align:middle; }
   table.grid thead th {
     background:#f2f2f2;
     font-weight:900;
@@ -1526,33 +1556,37 @@ function openPrintView() {
     overflow:hidden;
     width:100%;
   }
+  /* NO -webkit-line-clamp: deve essere uguale su Safari/Chrome */
   .clip-task, .clip-comment, .clip-tem{
-    display:-webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    line-height:1.03;
-    max-height:2.2em;
+    line-height:1.08;
+    height:5.3mm;         /* ~2 righe a 2.3mm */
+    overflow:hidden;
   }
   .clip-ob{
-    display:-webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 1;
     line-height:1.02;
-    max-height:1.2em;
+    height:2.7mm;         /* ~1 riga */
+    overflow:hidden;
   }
 
-  .footerRed{
-    margin-top:var(--gap-v);
-    padding-top:0.6mm;
-    border-top: 0.2mm solid var(--grid);
+  /* Sezione 3 come template */
+  .assessBar{
+    border:0.3mm solid var(--grid);
+    background:var(--bar);
+    font-weight:900;
+    font-size:2.65mm;
+    line-height:4.6mm;
+    padding:0 1.6mm;
+    box-sizing:border-box;
+  }
+  .assessBox{
+    border:0.3mm solid var(--grid);
+    padding:1.0mm 1.6mm;
+    box-sizing:border-box;
     color:#c40000;
     font-size:2.15mm;
     font-weight:800;
-    line-height:1.1;
-    white-space:normal;
-    overflow-wrap:anywhere;
-    height:var(--h-footer);
-    box-sizing:border-box;
+    line-height:1.12;
+    overflow:hidden;
   }
 
   @media print{
@@ -1600,7 +1634,8 @@ function openPrintView() {
     .tables,
     table.grid,
     .print-body,
-    .footerRed{
+    .assessBar,
+    .assessBox{
       break-inside: avoid !important;
       page-break-inside: avoid !important;
     }
@@ -1609,16 +1644,7 @@ function openPrintView() {
       break-inside: avoid !important;
       page-break-inside: avoid !important;
     }
-    .print-footer{
-      font-size:2.15mm !important;
-      line-height:1.1 !important;
-      margin-top:var(--gap-v) !important;
-      margin-bottom:0 !important;
-      padding-top:0.6mm !important;
-      height:var(--h-footer) !important;
-      white-space:normal !important;
-      overflow-wrap:anywhere !important;
-    }
+    .assessBox{ color:#c40000 !important; }
     tr {
       break-inside: avoid !important;
       page-break-inside: avoid !important;
@@ -1687,6 +1713,7 @@ function openPrintView() {
         </ul>
       </div>
     </div>
+    <div class="midSep"></div>
     <div class="box">
       <div class="boxTitle">2. Root Cause Classification</div>
       <div class="boxBody">
@@ -1711,6 +1738,12 @@ function openPrintView() {
         </table>
       </div>
 
+      <div class="divider" aria-hidden="true">
+        <svg viewBox="0 0 20 80" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 40 L14 12 L14 28 L18 28 L18 52 L14 52 L14 68 Z" fill="#9a9a9a" stroke="#7a7a7a" stroke-width="1"/>
+        </svg>
+      </div>
+
       <div>
         <table class="grid" id="tblRight">
           <colgroup>${obColGroup}</colgroup>
@@ -1719,127 +1752,30 @@ function openPrintView() {
         </table>
       </div>
     </div>
-
-    <div class="footerRed print-footer">${escapeHtml(BRAND.footerRed)}</div>
   </div>
+
+  <div class="assessBar">3. Assessment of Competencies</div>
+  <div class="assessBox">${escapeHtml(BRAND.footerRed)}</div>
 </div>
 </div>
 </div>
 
 <script>
-  function delay(ms){
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  function nextFrame(){
-    return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-  }
-
-  function waitForImageReady(img){
-    return new Promise(resolve => {
-      const timeoutId = setTimeout(resolve, 1800);
-      const done = () => {
-        clearTimeout(timeoutId);
-        if (typeof img.decode === "function") {
-          img.decode().catch(() => {}).finally(resolve);
-          return;
-        }
-        resolve();
-      };
-
-      if (img.complete) {
-        done();
-        return;
-      }
-
-      img.addEventListener("load", done, { once: true });
-      img.addEventListener("error", () => {
-        clearTimeout(timeoutId);
-        resolve();
-      }, { once: true });
+  /* stampa deterministica: niente misure a runtime (no sync/altezze JS) */
+  async function waitImg(img){
+    return new Promise(res=>{
+      const t=setTimeout(res,1500);
+      const done=()=>{ clearTimeout(t); res(); };
+      if (img.complete) return done();
+      img.addEventListener("load", done, {once:true});
+      img.addEventListener("error", done, {once:true});
     });
   }
-
-  async function waitForAssetsReady(){
-    const images = Array.from(document.images || []);
-    await Promise.all(images.map(waitForImageReady));
-    if (document.fonts && document.fonts.ready) {
-      try { await document.fonts.ready; } catch {}
-    }
-  }
-
-  function syncTableHeights(){
-    const left = document.getElementById('tblLeft');
-    const right = document.getElementById('tblRight');
-    if (!left || !right) return;
-
-    const reset = (tbl) => {
-      tbl.querySelectorAll('thead tr, tbody tr').forEach(tr => tr.style.height = '');
-    };
-    reset(left); reset(right);
-
-    const lh = left.querySelector('thead tr');
-    const rh = right.querySelector('thead tr');
-    if (lh && rh) {
-      const h = Math.max(lh.getBoundingClientRect().height, rh.getBoundingClientRect().height);
-      lh.style.height = h + 'px';
-      rh.style.height = h + 'px';
-    }
-
-    const lrows = Array.from(left.querySelectorAll('tbody tr'));
-    const rrows = Array.from(right.querySelectorAll('tbody tr'));
-    const n = Math.min(lrows.length, rrows.length);
-    for (let i=0;i<n;i++){
-      const h = Math.max(lrows[i].getBoundingClientRect().height, rrows[i].getBoundingClientRect().height);
-      lrows[i].style.height = h + 'px';
-      rrows[i].style.height = h + 'px';
-    }
-  }
-
-  function applyPrintLayout(){
-    syncTableHeights();
-  }
-
-  let preparePromise = null;
-  let printInFlight = false;
-
-  async function ensurePrintReady(){
-    if (!preparePromise) {
-      preparePromise = (async () => {
-        await waitForAssetsReady();
-        applyPrintLayout();
-        await nextFrame();
-        applyPrintLayout();
-        await delay(70);
-        applyPrintLayout();
-      })();
-    }
-    await preparePromise;
-  }
-
   async function triggerPrint(){
-    if (printInFlight) return;
-    printInFlight = true;
-    try {
-      await ensurePrintReady();
-      await delay(60);
-      window.print();
-    } finally {
-      setTimeout(() => { printInFlight = false; }, 300);
-    }
+    const imgs = Array.from(document.images||[]);
+    await Promise.all(imgs.map(waitImg));
+    window.print();
   }
-
-  window.addEventListener('load', () => {
-    ensurePrintReady().catch(() => {
-      applyPrintLayout();
-      setTimeout(applyPrintLayout, 120);
-      setTimeout(applyPrintLayout, 320);
-    });
-  });
-  window.addEventListener('resize', applyPrintLayout);
-  window.addEventListener('beforeprint', () => {
-    applyPrintLayout();
-  });
 </script>
 
 </body>
@@ -1851,9 +1787,6 @@ function openPrintView() {
   w.document.write(html);
   w.document.close();
 }
-
-
-
 /* =========================================================
    CAPITOLO 17 — INIT
    ========================================================= */
