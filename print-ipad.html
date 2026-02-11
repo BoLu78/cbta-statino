@@ -214,23 +214,16 @@
     #noDataWrap{ display:none !important; }
   }
 
-  @media print and (orientation: landscape) {
-    /* iOS-only: fit SOLO in landscape per evitare overflow che crea pagina 2 */
+  @media print {
     @supports (-webkit-touch-callout: none) {
-      :root{
-        --safe-y: 5.0mm; /* recupera spazio verticale SOLO in landscape */
-      }
-      .sheet{
-        transform: scale(0.982); /* fit definitivo SOLO landscape */
+      /* default: non toccare (portrait resta com’è) */
+      html.iosPrintLandscape { --safe-y: 4mm; }
+      html.iosPrintLandscape .sheet { overflow: hidden; }
+      html.iosPrintLandscape .page {
+        transform: scale(0.955);
+        -webkit-transform: scale(0.955);
         transform-origin: top left;
-      }
-    }
-  }
-
-  @media print and (orientation: portrait) {
-    @supports (-webkit-touch-callout: none) {
-      .sheet{
-        transform: none; /* portrait resta come ora (già corretto) */
+        -webkit-transform-origin: top left;
       }
     }
   }
@@ -513,9 +506,18 @@
   }
   root.innerHTML = html;
 
+  function setLandscapeClassForPrint() {
+    const isLandscape =
+      (window.matchMedia && window.matchMedia("(orientation: landscape)").matches) ||
+      (window.innerWidth > window.innerHeight);
+    document.documentElement.classList.toggle("iosPrintLandscape", !!isLandscape);
+  }
+
   requestAnimationFrame(() => setTimeout(() => {
     try {
-      window.print();
+      setLandscapeClassForPrint();
+      // micro delay per far applicare il CSS prima di aprire la preview
+      setTimeout(() => { window.print(); }, 50);
     } catch (_) {
       showBackBar();
     }
