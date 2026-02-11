@@ -217,18 +217,19 @@
   @media print {
     @supports (-webkit-touch-callout: none) {
 
-    /* iPad landscape: recupera mm con micro-tweaks su altezze rigide */
+    /* iPad landscape: one-page hard fit (no scale/transform) */
     html.iosPrintLandscape :root{
-      --safe-y: 4mm;        /* già ok */
-      --h-intro: 7.0mm;     /* era 7.5 */
-      --h-guidance: 17.0mm; /* era 17.5 */
-      --h-assessbox: 8.3mm; /* era 9.0 */
+      --safe-y: 3mm;
+      --h-intro: 6.2mm;
+      --h-guidance: 16.0mm;
+      --h-assessbar: 4.5mm;
+      --h-assessbox: 7.2mm;
     }
 
-    /* compatta solo il footer rosso (minimo) */
+    /* compact footer red box only for iPad landscape */
     html.iosPrintLandscape .assessBox{
-      padding: 0.6mm 1.4mm !important;
-      line-height: 1.06 !important;
+      padding: 0.4mm 1.2mm !important;
+      line-height: 1.0 !important;
     }
 
     /* break-inside più affidabile su wrapper */
@@ -252,7 +253,7 @@
 (function () {
   "use strict";
 
-  console.log("PRINT-IPAD VERSIONE:", "v12feb26-8.11.3");
+  console.log("PRINT-IPAD VERSIONE:", "v12feb26-8.11.4");
 
   const STORAGE_KEY = "CBTA_PRINT_PAYLOAD_V1";
   const DEFAULT_OB_COLS_ORDER = ["PRO", "COM", "FPM", "FPA", "LTW", "PSD", "SAW", "WLM", "KNO"];
