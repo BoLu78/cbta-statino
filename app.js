@@ -7,7 +7,7 @@
    ✅ UI/CRUD/Settings: same behavior as stable version
    ========================================================= */
 
-const BUILD_ID = "12feb26-v7";
+const BUILD_ID = "-v12feb26-7";
 function getAppVersionLabel() {
   return "v" + BUILD_ID;
 }
