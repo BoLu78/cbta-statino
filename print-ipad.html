@@ -214,15 +214,23 @@
     #noDataWrap{ display:none !important; }
   }
 
-  @media print {
-    /* iOS-only: fit definitivo per evitare overflow che crea pagina 2 */
+  @media print and (orientation: landscape) {
+    /* iOS-only: fit SOLO in landscape per evitare overflow che crea pagina 2 */
     @supports (-webkit-touch-callout: none) {
       :root{
-        --safe-y: 5.5mm; /* recupera ~0.5mm verticali */
+        --safe-y: 5.0mm; /* recupera spazio verticale SOLO in landscape */
       }
       .sheet{
-        transform: scale(0.985);   /* più forte di 0.99: elimina pagina 2 */
+        transform: scale(0.982); /* fit definitivo SOLO landscape */
         transform-origin: top left;
+      }
+    }
+  }
+
+  @media print and (orientation: portrait) {
+    @supports (-webkit-touch-callout: none) {
+      .sheet{
+        transform: none; /* portrait resta come ora (già corretto) */
       }
     }
   }
@@ -235,7 +243,7 @@
 (function () {
   "use strict";
 
-  console.log("PRINT-IPAD VERSIONE:", "v12feb26-8.7");
+  console.log("PRINT-IPAD VERSIONE:", "v12feb26-8.9");
 
   const STORAGE_KEY = "CBTA_PRINT_PAYLOAD_V1";
   const DEFAULT_OB_COLS_ORDER = ["PRO", "COM", "FPM", "FPA", "LTW", "PSD", "SAW", "WLM", "KNO"];
