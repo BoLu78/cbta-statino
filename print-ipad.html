@@ -216,15 +216,28 @@
 
   @media print {
     @supports (-webkit-touch-callout: none) {
-      /* default: non toccare (portrait resta com’è) */
-      html.iosPrintLandscape { --safe-y: 4mm; }
-      html.iosPrintLandscape { --h-tables: 109mm; }
-      html.iosPrintLandscape .sheet { overflow: hidden; }
-      html.iosPrintLandscape .page {
-        transform: scale(0.955);
-        -webkit-transform: scale(0.955);
-        transform-origin: top left;
-        -webkit-transform-origin: top left;
+
+      /* iPad landscape: recupera spazio in modo deterministico (NO SCALE) */
+      html.iosPrintLandscape :root {
+        --safe-y: 4mm;        /* recupera 2mm sopra/sotto */
+        --h-tables: 110mm;    /* era 114: recupera 4mm dove pesa di più */
+      }
+
+      /* compattazione minima SOLO del footer rosso (invisibile a occhio) */
+      html.iosPrintLandscape .assessBox{
+        padding: 0.6mm 1.4mm !important;
+        line-height: 1.06 !important;
+      }
+
+      /* Safari iOS: break-inside va applicato ai wrapper, non ai tr */
+      html.iosPrintLandscape table.layout,
+      html.iosPrintLandscape table.layout > tbody,
+      html.iosPrintLandscape table.layout > tbody > tr,
+      html.iosPrintLandscape table.twotables,
+      html.iosPrintLandscape table.twotables > tbody,
+      html.iosPrintLandscape table.twotables > tbody > tr{
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
       }
     }
   }
@@ -237,7 +250,7 @@
 (function () {
   "use strict";
 
-  console.log("PRINT-IPAD VERSIONE:", "v12feb26-8.9");
+  console.log("PRINT-IPAD VERSIONE:", "v12feb26-8.11.2");
 
   const STORAGE_KEY = "CBTA_PRINT_PAYLOAD_V1";
   const DEFAULT_OB_COLS_ORDER = ["PRO", "COM", "FPM", "FPA", "LTW", "PSD", "SAW", "WLM", "KNO"];
@@ -488,11 +501,11 @@
           </td>
         </tr>
 
-        <tr style="height: var(--h-assessbar);">
+        <tr class="assessBarRow" style="height: var(--h-assessbar);">
           <td><div class="assessBar">3. Assessment of Competencies</div></td>
         </tr>
 
-        <tr style="height: var(--h-assessbox);">
+        <tr class="assessBoxRow" style="height: var(--h-assessbox);">
           <td><div class="assessBox">${escapeHtml(safeStr(brand.footerRed))}</div></td>
         </tr>
       </tbody>
